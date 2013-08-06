@@ -1,0 +1,13 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.sublime-*"
+			],
+			"follow_symlinks": true,
+			"path": "C:\\Users\\Matt\\Documents\\Projects\\Meteor homework"
+		}
+	]
+}
