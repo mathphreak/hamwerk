@@ -1,0 +1,86 @@
+<head>
+    <title>Todos</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div id="side-pane" class="span3">
+                <div class="well sidebar-nav">
+                    <ul class="nav nav-list">
+                        {{> classes}}
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="main-pane" class="span9">
+                {{> assignments}}
+            </div>
+        </div>
+    </div>
+</body>
+
+<template name="classes">
+    <li class="nav-header">Classes</li>
+    {{#if loading}}
+        <li class="nav-header">Loading...</li>
+    {{else}}
+        {{#each classes}}
+            <li class="class {{active}}">
+                {{#if editing}}
+                    <div class="edit">
+                        <input class="class-name-input" id="class-name-input" type="text" value="{{name}}" />
+                    </div>
+                {{else}}
+                    <a class="class-name {{name_class}}" href="/{{_id}}">
+                        {{name}}
+                    </a>
+                {{/if}}
+            </li>
+        {{/each}}
+        <li class="divider"></li>
+        <li id="createList" class="nav-header">
+            <div class="row-fluid">
+                <input type="text" id="new-class" placeholder="New class" class="span12" />
+            </div>
+        </li>
+    {{/if}}
+</template>
+
+<template name="assignments">
+    {{#if any_class_selected}}
+        <div id="items-view">
+            {{#if loading}}
+                Loading...
+            {{else}}
+                <div class="row-fluid"><input type="text" id="new-assignment" placeholder="New item" class="span12" /></div>
+                <div style="margin: 0px !important;">
+                    {{#each assignments}}
+                        {{> assignment_item}}
+                    {{/each}}
+                </ul>
+            {{/if}}
+        </div>
+    {{/if}}
+</template>
+
+<template name="assignment_item">
+    <div class="assignment {{done_class}} row-fluid">
+        {{#if editing}}
+            <div class="edit">
+                <input id="assignment-input" type="text" value="{{text}}" />
+            </div>
+        {{else}}
+            <div class="span1 text-center">
+                <i class="destroy icon-trash"></i>
+                <a class="check" href="#"><i class="icon-check{{{done_checkbox}}}"></i></a>
+            </div>
+            <div class="span8 assignment-text">{{text}}</div>
+        {{/if}}
+        <div class="item-details span3 text-right">
+            Due whenever!
+        </div>
+    </div>
+</template>
+

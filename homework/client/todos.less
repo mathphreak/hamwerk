@@ -1,0 +1,32 @@
+#help {
+    padding: 8px;
+}
+
+.assignment {
+    border-top: 1px solid gray;
+}
+
+.assignment:first-child {
+    border-top: 0px solid gray;
+}
+
+.assignment .destroy {
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.assignment:hover .destroy {
+    visibility: inherit;
+    color: gray;
+}
+
+.assignment .destroy:hover {
+    color: black;
+}
+
+a.check {
+    color: inherit;
+    &:hover {
+        text-decoration: none;
+    }
+}
