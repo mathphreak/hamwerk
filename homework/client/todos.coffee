@@ -7,12 +7,6 @@
 # ID of currently selected class
 Session.setDefault "class_id", null
 
-# Name of currently selected tag for filtering
-Session.setDefault "tag_filter", null
-
-# When adding tag to a assignment, ID of the assignment
-Session.setDefault "editing_addtag", null
-
 # When editing a class name, ID of the class
 Session.setDefault "editing_classname", null
 
@@ -21,11 +15,7 @@ Session.setDefault "editing_itemname", null
 
 # Subscribe to "classes" collection on startup.
 # Select a class once data has arrived.
-classesHandle = Meteor.subscribe "classes", ->
-    if !Session.get("class_id")?
-        thisClass = Classes.findOne {}, sort: name: 1
-        if thisClass?
-            Router.setList thisClass._id
+classesHandle = Meteor.subscribe "classes", -> Router.setList ""
 
 assignmentsHandle = null
 # Always be subscribed to the assignments for the selected class.
@@ -33,7 +23,7 @@ Deps.autorun ->
     class_id = Session.get "class_id"
     if class_id?
         assignmentsHandle = Meteor.subscribe("assignments", class_id)
-    else
+    else if class_id is ""
         assignmentsHandle = null
 
 
@@ -55,7 +45,7 @@ okCancelEvents = (selector, callbacks) ->
             else if evt.type is "keyup" && evt.which is 13 || evt.type is "focusout"
                 # blur/return/enter = ok/submit if non-empty
                 value = String(evt.target.value || "")
-                if value?
+                if value
                     ok.call(this, value, evt)
                 else
                     cancel.call(this, evt)
@@ -70,6 +60,8 @@ activateInput = (input) ->
 Template.classes.loading = -> !classesHandle.ready()
 
 Template.classes.classes = -> return Classes.find {}, sort: name: 1
+
+Template.classes.fake_all_class_list = -> [_id: ""]
 
 Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
@@ -93,9 +85,8 @@ Template.classes.events okCancelEvents "#class-name-input",
     cancel: ->
         Session.set "editing_classname", null
 
-Template.classes.active = -> if Session.equals("class_id", this._id) then "active" else ""
-
-Template.classes.name_class = -> if this.name then "" else "empty"
+Template.classes.active = ->
+    if Session.equals("class_id", this._id) then "active" else ""
 
 Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
@@ -128,11 +119,50 @@ Template.assignments.assignments = ->
     tag_filter = Session.get "tag_filter"
     sel.tags = tag_filter if tag_filter?
     
-    return Assignments.find sel, sort: timestamp: 1
+    return Assignments.find sel, sort: ["done", "due"]
 
-Template.assignment_item.tag_objs = ->
-    assignment_id = this._id
-    _.map this.tags || [], (tag) -> {assignment_id: assignment_id, tag: tag}
+Template.assignment_item.precise_due_date = -> @due.toDateString()
+
+div = (a, b) -> (a - a % b) / b
+
+overdueness = (msPastDue) ->
+    secondsPastDue = div(msPastDue, 1000)
+    if secondsPastDue < 60
+        return "#{secondsPastDue} seconds ago"
+    minutesPastDue = div(secondsPastDue, 60)
+    if minutesPastDue < 60
+        return "#{minutesPastDue} minutes ago"
+    hoursPastDue = div(minutesPastDue, 60)
+    if hoursPastDue < 24
+        return "#{hoursPastDue} hours ago"
+    daysPastDue = div(hoursPastDue, 24)
+    if daysPastDue < 7
+        return "#{daysPastDue} days ago"
+    weeksPastDue = div(daysPastDue, 7)
+    if weeksPastDue < 4
+        return "#{weeksPastDue} weeks ago"
+    return "a while back; give up now"
+
+Template.assignment_item.fuzzy_due_date = ->
+    msLeft = @due.getTime() - (new Date()).getTime()
+    if msLeft < 0
+        return overdueness(-msLeft)
+    secondsLeft = div(msLeft, 1000)
+    if secondsLeft < 60
+        return "in #{secondsLeft} seconds"
+    minutesLeft = div(secondsLeft, 60)
+    if minutesLeft < 60
+        return "in #{minutesLeft} minutes"
+    hoursLeft = div(minutesLeft, 60)
+    if hoursLeft < 24
+        return "in #{hoursLeft} hours"
+    daysLeft = div(hoursLeft, 24)
+    if daysLeft < 7
+        return "in #{daysLeft} days"
+    weeksLeft = div(daysLeft, 7)
+    if weeksLeft < 4
+        return "in #{weeksLeft} weeks"
+    return "in a while; don't sweat it"
 
 Template.assignment_item.done_class = -> if this.done then "muted" else ""
 
@@ -140,32 +170,25 @@ Template.assignment_item.done_checkbox = -> if this.done then "" else "-empty"
 
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
 
-Template.assignment_item.adding_tag = -> Session.equals("editing_addtag", this._id)
+Template.assignment_item.text_class = ->
+    msLeft = @due.getTime() - (new Date()).getTime()
+    if msLeft < 0
+        return "text-error"
+    if div(msLeft, 1000 * 60 * 60) < 12
+        return "text-warning"
+    if div(msLeft, 1000 * 60 * 60 * 24) < 3
+        return "text-info"
+    return "text-success"
 
 Template.assignment_item.events
     "click .check": -> Assignments.update this._id, $set: done: !this.done
 
     "click .destroy": -> Assignments.remove(this._id)
 
-    "click .addtag": (evt, tmpl) ->
-        Session.set "editing_addtag", this._id
-        Deps.flush() # update DOM before focus
-        activateInput(tmpl.find("#edittag-input"))
-
-    "dblclick .display .assignment-text": (evt, tmpl) ->
+    "dblclick .assignment-text": (evt, tmpl) ->
         Session.set "editing_itemname", this._id
         Deps.flush() # update DOM before focus
         activateInput(tmpl.find("#assignment-input"))
-
-    "click .remove": (evt) ->
-        tag = this.tag
-        id = this.assignment_id
-
-        evt.target.parentNode.style.opacity = 0
-        # wait for CSS animation to finish
-        Meteor.setTimeout(->
-            Assignments.update({_id: id}, {$pull: {tags: tag}})
-        , 300)
 
 Template.assignment_item.events okCancelEvents "#assignment-input",
     ok: (value) ->
@@ -185,10 +208,7 @@ AssignmentsRouter = Backbone.Router.extend
     routes:
         ":class_id": "main"
     main: (class_id) ->
-        oldList = Session.get "class_id"
-        if oldList isnt class_id
-            Session.set "class_id", class_id
-            Session.set "tag_filter", null
+        Session.set "class_id", class_id
     setList: (class_id) -> @navigate class_id, true
 
 Router = new AssignmentsRouter
