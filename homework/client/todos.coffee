@@ -24,6 +24,8 @@ Deps.autorun ->
     if class_id?
         assignmentsHandle = Meteor.subscribe("assignments", class_id)
     else if class_id is ""
+        assignmentsHandle = Meteor.subscribe("assignments", "")
+    else
         assignmentsHandle = null
 
 
@@ -45,10 +47,7 @@ okCancelEvents = (selector, callbacks) ->
             else if evt.type is "keyup" && evt.which is 13 || evt.type is "focusout"
                 # blur/return/enter = ok/submit if non-empty
                 value = String(evt.target.value || "")
-                if value
-                    ok.call(this, value, evt)
-                else
-                    cancel.call(this, evt)
+                ok.call(this, value, evt)
     return events
 
 activateInput = (input) ->
@@ -80,7 +79,10 @@ Template.classes.events okCancelEvents "#new-class",
 
 Template.classes.events okCancelEvents "#class-name-input",
     ok: (value) ->
-        Classes.update this._id, $set: name: value
+        if value isnt ""
+            Classes.update this._id, $set: name: value
+        else
+            Meteor.call "nukeClass", this._id, -> Session.set "class_id", ""
         Session.set "editing_classname", null
     cancel: ->
         Session.set "editing_classname", null
@@ -98,71 +100,57 @@ Template.assignments.any_class_selected = -> !Session.equals("class_id", null)
 
 Template.assignments.events okCancelEvents "#new-assignment",
     ok: (text, evt) ->
-        tag = Session.get "tag_filter"
-        Assignments.insert
-            text: text,
-            class_id: Session.get("class_id"),
-            done: false,
-            timestamp: (new Date()).getTime(),
-            tags: if tag then [tag] else []
+        return unless text
+        if !Session.get("class_id")
+            alert "No class selected; specifying class from all class view is not yet implemented"
+            evt.target.value = ""
+            return
+        newAssignment =
+            class_id: Session.get("class_id")
+            done: false
+            timestamp: (new Date()).getTime()
+        dueDateMatch = /(.+) due (.+)/.exec text
+        if dueDateMatch?
+            newAssignment.text = dueDateMatch[1]
+            newAssignment.due = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
+        else
+            newAssignment.text = text
+            newAssignment.due = DateOMatic.parseFuzzyFutureDate("tomorrow")
+        Assignments.insert newAssignment
         evt.target.value = ""
+
+logify = _.bind(console.log, console)
 
 Template.assignments.assignments = ->
     # Determine which assignments to display in main pane,
     # selected based on class_id and tag_filter.
 
     class_id = Session.get "class_id"
-    if !class_id
-        return {}
+    return {} unless class_id?
 
     sel = class_id: class_id
-    tag_filter = Session.get "tag_filter"
-    sel.tags = tag_filter if tag_filter?
+    if class_id is ""
+        sel = {}
     
-    return Assignments.find sel, sort: ["done", "due"]
+    return _(Assignments.find(sel).fetch()).chain()
+           .sortBy("due")
+           .sortBy("done")
+           .groupBy("done")
+           .pairs()
+           .map(([truthiness, list]) -> _.sortBy(list, (obj) -> 
+                if truthiness is "true"
+                    Math.abs(DateOMatic.msDifferential(obj.due))
+                else
+                    obj.due.getTime()
+            ))
+           .reduce(((memo, list) -> memo.concat(list)), [])
+           .value()
 
-Template.assignment_item.precise_due_date = -> @due.toDateString()
+Template.assignment_item.precise_due_date = -> DateOMatic.stringify(@due)
 
 div = (a, b) -> (a - a % b) / b
 
-overdueness = (msPastDue) ->
-    secondsPastDue = div(msPastDue, 1000)
-    if secondsPastDue < 60
-        return "#{secondsPastDue} seconds ago"
-    minutesPastDue = div(secondsPastDue, 60)
-    if minutesPastDue < 60
-        return "#{minutesPastDue} minutes ago"
-    hoursPastDue = div(minutesPastDue, 60)
-    if hoursPastDue < 24
-        return "#{hoursPastDue} hours ago"
-    daysPastDue = div(hoursPastDue, 24)
-    if daysPastDue < 7
-        return "#{daysPastDue} days ago"
-    weeksPastDue = div(daysPastDue, 7)
-    if weeksPastDue < 4
-        return "#{weeksPastDue} weeks ago"
-    return "a while back; give up now"
-
-Template.assignment_item.fuzzy_due_date = ->
-    msLeft = @due.getTime() - (new Date()).getTime()
-    if msLeft < 0
-        return overdueness(-msLeft)
-    secondsLeft = div(msLeft, 1000)
-    if secondsLeft < 60
-        return "in #{secondsLeft} seconds"
-    minutesLeft = div(secondsLeft, 60)
-    if minutesLeft < 60
-        return "in #{minutesLeft} minutes"
-    hoursLeft = div(minutesLeft, 60)
-    if hoursLeft < 24
-        return "in #{hoursLeft} hours"
-    daysLeft = div(hoursLeft, 24)
-    if daysLeft < 7
-        return "in #{daysLeft} days"
-    weeksLeft = div(daysLeft, 7)
-    if weeksLeft < 4
-        return "in #{weeksLeft} weeks"
-    return "in a while; don't sweat it"
+Template.assignment_item.fuzzy_due_date = -> if DateOMatic.isFuture(@due) then "in #{DateOMatic.fuzzyDifferential(@due)}" else "#{DateOMatic.fuzzyDifferential(@due)} ago"
 
 Template.assignment_item.done_class = -> if this.done then "muted" else ""
 
@@ -171,17 +159,20 @@ Template.assignment_item.done_checkbox = -> if this.done then "" else "-empty"
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
 
 Template.assignment_item.text_class = ->
+    if @done
+        return "text-muted"
     msLeft = @due.getTime() - (new Date()).getTime()
     if msLeft < 0
         return "text-error"
-    if div(msLeft, 1000 * 60 * 60) < 12
+    if div(msLeft, 1000 * 60 * 60) < 24
         return "text-warning"
     if div(msLeft, 1000 * 60 * 60 * 24) < 3
         return "text-info"
     return "text-success"
 
 Template.assignment_item.events
-    "click .check": -> Assignments.update this._id, $set: done: !this.done
+    "click .check": ->
+        Assignments.update this._id, $set: done: !this.done
 
     "click .destroy": -> Assignments.remove(this._id)
 
@@ -196,12 +187,6 @@ Template.assignment_item.events okCancelEvents "#assignment-input",
         Session.set "editing_itemname", null
     cancel: -> Session.set "editing_itemname", null
 
-Template.assignment_item.events okCancelEvents "#edittag-input",
-    ok: (value) ->
-        Assignments.update this._id, $addToSet: tags: value
-        Session.set "editing_addtag", null
-    cancel: -> Session.set "editing_addtag", null
-
 # Tracking selected class in URL #
 
 AssignmentsRouter = Backbone.Router.extend
@@ -209,18 +194,48 @@ AssignmentsRouter = Backbone.Router.extend
         ":class_id": "main"
     main: (class_id) ->
         Session.set "class_id", class_id
-    setList: (class_id) -> @navigate class_id, true
+    setList: (class_id) ->
+        @navigate class_id, trigger: true
+        Session.set "class_id", class_id
 
 Router = new AssignmentsRouter
 
+loadIntercomActual = (force) ->
+    if _.isFunction(window.Intercom)
+        window.Intercom('reattach_activator')
+        window.Intercom('update', intercomSettings)
+    else
+        i = (stuff...) -> i.c(stuff)
+        i.q = []
+        i.c = (args) -> i.q.push(args)
+        window.Intercom = i
+        l = ->
+            s = document.createElement('script')
+            s.type = 'text/javascript'
+            s.async = true
+            s.src = 'https://static.intercomcdn.com/intercom.v1.js'
+            x = document.getElementsByTagName('script')[0]
+            x.parentNode.insertBefore(s, x)
+        if force
+            l()
+        else if w.attachEvent?
+            w.attachEvent('onload', l)
+        else
+            w.addEventListener('load', l, false)
+
+loadIntercom = (force = no) ->
+    return Meteor.setTimeout((-> loadIntercomActual(force)), 250)
+
 Meteor.startup ->
     Backbone.history.start pushState: true
-    `(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://static.intercomcdn.com/intercom.v1.js';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}};})()`
-
-window.intercomSettings =
-    # TODO: The current logged in user's email address.
-    email: "mathphreak@gmail.com",
-    # TODO: The current logged in user's sign-up date as a Unix timestamp.
-    created_at: 0,
-    "widget": "activator": "#IntercomDefaultWidget"
-    app_id: "2bb6ee6dc80fe8088dd8b40d21fa64fd5ab4db8a"
+    Meteor.call "hash", (error, user_hash) ->
+        window.intercomSettings =
+            # TODO: The current logged in user's email address.
+            email: "mathphreak@gmail.com"
+            swag_level: 100
+            # TODO: The current logged in user's sign-up date as a Unix timestamp.
+            created_at: 0
+            "widget": "activator": "#IntercomDefaultWidget"
+            app_id: "2bb6ee6dc80fe8088dd8b40d21fa64fd5ab4db8a"
+            user_hash: user_hash
+        loadIntercom yes

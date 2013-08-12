@@ -4,6 +4,7 @@ if [ ! -d /home/vagrant/homework ]; then
     curl https://install.meteor.com | sudo sh
     cd /home/vagrant
     su vagrant -c 'meteor create homework'
+    cd homework
     su vagrant -c 'meteor add coffeescript less bootstrap backbone'
     su vagrant -c 'meteor remove autopublish'
     cd /vagrant/homework

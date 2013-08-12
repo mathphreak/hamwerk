@@ -1,2 +1,3 @@
 *.sublime-*
 .vagrant
+secrets.coffee

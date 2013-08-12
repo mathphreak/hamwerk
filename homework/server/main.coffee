@@ -1,3 +1,33 @@
+# Lists -- {name: String}
+@Classes = new Meteor.Collection "classes"
+
+# Publish complete set of classes to all clients.
+Meteor.publish 'classes', -> Classes.find()
+
+
+# Assignments -- {text: String,
+#                 done: Boolean,
+#                 due: Date,
+#                 class_id: String,
+#                 timestamp: Number}
+@Assignments = new Meteor.Collection "assignments"
+
+# Publish all items for requested class_id.
+Meteor.publish 'assignments', (class_id) ->
+    check(class_id, String, Boolean)
+    if class_id is ""
+        return Assignments.find()
+    return Assignments.find(class_id: class_id)
+
+Meteor.methods
+    hash: ->
+        email = "mathphreak@gmail.com"
+        hash = CryptoJS.HmacSHA256(email, intercomSecrets.secret_key)
+        return hash.toString()
+    nukeClass: (classID) ->
+        Classes.remove classID
+        Assignments.remove {class_id: classID}
+        
 # if the database is empty on server start, create some sample data.
 Meteor.startup ->
     if Classes.find().count() is 0
