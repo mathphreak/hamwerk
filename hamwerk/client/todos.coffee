@@ -21,13 +21,17 @@ assignmentsHandle = null
 # Always be subscribed to the assignments for the selected class.
 Deps.autorun ->
     class_id = Session.get "class_id"
-    console.log(Meteor.userId()) # hack to force dependency on Meteor.user()
+    console.log Meteor.userId()
     if class_id?
         assignmentsHandle = Meteor.subscribe("assignments", class_id)
     else if class_id is ""
         assignmentsHandle = Meteor.subscribe("assignments", "")
     else
         assignmentsHandle = null
+
+Deps.autorun ->
+    if !Meteor.userId()?
+        Router.setList("")
 
 # Helpers for in-place editing #
 
@@ -73,7 +77,7 @@ Template.classes.events
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
     ok: (text, evt) ->
-        id = Classes.insert name: text
+        id = Classes.insert name: text, user: Meteor.userId()
         Router.setList(id)
         evt.target.value = ""
 

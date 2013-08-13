@@ -1,6 +1,16 @@
 # Classes -- {name: String, user: String}
 @Classes = new Meteor.Collection "classes"
 
+Classes.allow
+    insert: (userId, doc) -> userId? and doc.user is userId
+    update: (userId, doc) -> doc.user is userId
+    remove: (userId, doc) -> doc.user is userId
+    fetch: ["user"]
+
+Classes.deny
+    insert: (userId, doc) -> doc.name is ""
+    update: (userId, doc, fieldNames) -> fieldNames.indexOf("user") isnt -1
+
 # Publish complete set of classes to all clients.
 Meteor.publish 'classes', -> Classes.find({user: @userId})
 
@@ -12,11 +22,23 @@ Meteor.publish 'classes', -> Classes.find({user: @userId})
 #                 timestamp: Number}
 @Assignments = new Meteor.Collection "assignments"
 
+classMatches = (class_id, userId) -> Classes.findOne(class_id)?.user is userId
+
+Assignments.allow
+    insert: (userId, doc) -> userId? and classMatches(doc.class_id, userId)
+    update: (userId, doc) -> classMatches(doc.class_id, userId)
+    remove: (userId, doc) -> classMatches(doc.class_id, userId)
+    fetch: ["class_id"]
+
+Assignments.deny
+    update: (userId, doc, fieldNames) -> fieldNames.indexOf("class_id") isnt -1
+
 # Publish all items for requested class_id.
 Meteor.publish 'assignments', (class_id) ->
     check(class_id, String)
     throw new Meteor.Error(401, "Not logged in") unless @userId?
     if class_id is ""
+        console.log "All classes for #{@userId}"
         return Assignments.find({class_id: $in: _.pluck(Classes.find({user: @userId}, {fields: _id: 1}).fetch(), "_id")})
     if Classes.findOne(class_id).user isnt @userId
         throw new Meteor.Error(403, "This class doesn't belong to you")
@@ -27,9 +49,12 @@ Meteor.methods
         email = Meteor.users.findOne(_id: @userId)?.emails[0].address
         hash = CryptoJS.HmacSHA256(email, intercomSecrets.secret_key)
         return hash.toString()
-    nukeClass: (classID) ->
-        Classes.remove classID
-        Assignments.remove {class_id: classID}
+    nukeClass: (class_id) ->
+        if Classes.findOne(class_id).user is @userId
+            Classes.remove class_id
+            Assignments.remove {class_id: class_id}
+        else
+            throw new Meteor.Error(403, "This class doesn't belong to you")
         
 # if a user is created, create some sample data.
 Accounts.onCreateUser (options, user) ->
