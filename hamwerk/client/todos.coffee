@@ -21,13 +21,13 @@ assignmentsHandle = null
 # Always be subscribed to the assignments for the selected class.
 Deps.autorun ->
     class_id = Session.get "class_id"
+    console.log(Meteor.userId()) # hack to force dependency on Meteor.user()
     if class_id?
         assignmentsHandle = Meteor.subscribe("assignments", class_id)
     else if class_id is ""
         assignmentsHandle = Meteor.subscribe("assignments", "")
     else
         assignmentsHandle = null
-
 
 # Helpers for in-place editing #
 

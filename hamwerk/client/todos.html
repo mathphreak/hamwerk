@@ -1,6 +1,6 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todos</title>
+    <title>Hamwerk</title>
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
 </head>
 
@@ -11,25 +11,29 @@
         </div>
     </div>
     
-    <div class="container-fluid" style="margin-top: 1em;">
-        <div class="row-fluid">
-            <div id="side-pane" class="span3">
-                <div class="well sidebar-nav">
-                    <ul class="nav nav-list">
-                        {{> classes}}
-                    </ul>
+    <div class="container-fluid">
+        {{#if currentUser}}
+            <div class="row-fluid">
+                <div id="side-pane" class="span3">
+                    <div class="well sidebar-nav">
+                        <ul class="nav nav-list">
+                            {{> classes}}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="main-pane" class="span9">
+                    {{> assignments}}
                 </div>
             </div>
-            
-            <div id="main-pane" class="span9">
-                {{> assignments}}
-            </div>
-        </div>
+        {{else}}
+            {{> landing_page}}
+        {{/if}}
     </div>
 </body>
 
 <template name="navbar">
-    <a class="brand" href="/">Homework</a>
+    <a class="brand" href="/">Hamwerk</a>
     <div class="pull-right navbar-text">{{loginButtons align="right"}}</div>
 </template>
 
