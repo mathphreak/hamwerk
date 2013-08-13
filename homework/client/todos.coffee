@@ -171,7 +171,7 @@ Template.assignment_item.text_class = ->
     return "text-success"
 
 Template.assignment_item.events
-    "click .check": ->
+    "click .check, tap .check": ->
         Assignments.update this._id, $set: done: !this.done
 
     "click .destroy": -> Assignments.remove(this._id)
@@ -231,10 +231,10 @@ Meteor.startup ->
     Meteor.call "hash", (error, user_hash) ->
         window.intercomSettings =
             # TODO: The current logged in user's email address.
-            email: "mathphreak@gmail.com"
+            email: Meteor.user()?.emails[0].address
             swag_level: 100
             # TODO: The current logged in user's sign-up date as a Unix timestamp.
-            created_at: 0
+            created_at: Meteor.user()?.createdAt
             "widget": "activator": "#IntercomDefaultWidget"
             app_id: "2bb6ee6dc80fe8088dd8b40d21fa64fd5ab4db8a"
             user_hash: user_hash

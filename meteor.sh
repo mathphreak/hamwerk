@@ -5,7 +5,7 @@ if [ ! -d /home/vagrant/homework ]; then
     cd /home/vagrant
     su vagrant -c 'meteor create homework'
     cd homework
-    su vagrant -c 'meteor add coffeescript less bootstrap backbone'
+    su vagrant -c 'meteor add coffeescript less bootstrap backbone accounts-password accounts-ui'
     su vagrant -c 'meteor remove autopublish'
     cd /vagrant/homework
     rm -vrf .meteor

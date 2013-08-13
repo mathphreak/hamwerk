@@ -1,8 +1,8 @@
-# Lists -- {name: String}
+# Classes -- {name: String, user: String}
 @Classes = new Meteor.Collection "classes"
 
 # Publish complete set of classes to all clients.
-Meteor.publish 'classes', -> Classes.find()
+Meteor.publish 'classes', -> Classes.find({user: @userId})
 
 
 # Assignments -- {text: String,
@@ -14,23 +14,28 @@ Meteor.publish 'classes', -> Classes.find()
 
 # Publish all items for requested class_id.
 Meteor.publish 'assignments', (class_id) ->
-    check(class_id, String, Boolean)
+    check(class_id, String)
+    throw new Meteor.Error(401, "Not logged in") unless @userId?
     if class_id is ""
-        return Assignments.find()
+        console.log "Finding all classes for #{@userId}"
+        return Assignments.find({class_id: $in: _.pluck(Classes.find({user: @userId}, {fields: _id: 1}).fetch(), "_id")})
+    if Classes.findOne(class_id).user isnt @userId
+        throw new Meteor.Error(403, "This class doesn't belong to you")
     return Assignments.find(class_id: class_id)
 
 Meteor.methods
     hash: ->
-        email = "mathphreak@gmail.com"
+        email = Meteor.users.findOne(_id: @userId)?.emails[0].address
         hash = CryptoJS.HmacSHA256(email, intercomSecrets.secret_key)
         return hash.toString()
     nukeClass: (classID) ->
         Classes.remove classID
         Assignments.remove {class_id: classID}
         
-# if the database is empty on server start, create some sample data.
-Meteor.startup ->
-    if Classes.find().count() is 0
+# if a user is created, create some sample data.
+Accounts.onCreateUser (options, user) ->
+    userId = user._id
+    if Classes.find({user: userId}).count() is 0
         data = [
             {
                 name: "Physics",
@@ -58,7 +63,10 @@ Meteor.startup ->
 
         timestamp = (new Date()).getTime()
         for value in data
-            class_id = Classes.insert(name: value.name)
+            class_id = Classes.insert(name: value.name, user: userId)
             for info in value.contents
                 Assignments.insert(class_id: class_id, text: info[0], timestamp: timestamp, due: new Date(info[1]))
                 timestamp += 1
+    if options.profile?
+        user.profile = options.profile
+    return user

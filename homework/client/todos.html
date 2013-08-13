@@ -1,10 +1,17 @@
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos</title>
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="container-fluid">
+    <div class="navbar navbar-static-top">
+        <div class="navbar-inner">
+            {{> navbar}}
+        </div>
+    </div>
+    
+    <div class="container-fluid" style="margin-top: 1em;">
         <div class="row-fluid">
             <div id="side-pane" class="span3">
                 <div class="well sidebar-nav">
@@ -21,13 +28,21 @@
     </div>
 </body>
 
+<template name="navbar">
+    <a class="brand" href="/">Homework</a>
+    <div class="pull-right navbar-text">{{loginButtons align="right"}}</div>
+</template>
+
 <template name="classes">
     {{#each fake_all_class_list}}
         <li class="class {{active}}"><a href="/">All Classes</a></li>
     {{/each}}
     <li class="nav-header">Classes</li>
     {{#if loading}}
-        <li class="nav-header">Loading...</li>
+        <li class="nav-header">
+            <i class="icon-spinner icon-spin"></i>
+            Loading...
+        </li>
     {{else}}
         {{#each classes}}
             <li class="class {{active}}">
@@ -55,7 +70,7 @@
     {{#if any_class_selected}}
         <div id="items-view">
             {{#if loading}}
-                Loading...
+                <i class="icon-spinner icon-spin"></i> Loading...
             {{else}}
                 {{> new_assignment_box}}
                 <div>
