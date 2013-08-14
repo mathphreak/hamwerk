@@ -105,14 +105,23 @@ Template.assignments.any_class_selected = -> !Session.equals("class_id", null)
 Template.assignments.events okCancelEvents "#new-assignment",
     ok: (text, evt) ->
         return unless text
-        if !Session.get("class_id")
-            alert "No class selected; specifying class from all class view is not yet implemented"
-            evt.target.value = ""
-            return
+        class_id = Session.get("class_id")
+        if !class_id
+            lowercaseText = text.toLowerCase()
+            classes = Classes.find({}, fields: name: 1).fetch()
+            guessedClass = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
+            if guessedClass?
+                text = text.slice(guessedClass.name.length + 1)
+                class_id = guessedClass._id
+            else
+                alert "No class specified"
+                evt.target.value = ""
+                return
         newAssignment =
-            class_id: Session.get("class_id")
+            class_id: class_id
             done: false
             timestamp: (new Date()).getTime()
+        text = text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase()
         dueDateMatch = /(.+) due (.+)/.exec text
         if dueDateMatch?
             newAssignment.text = dueDateMatch[1]
@@ -137,7 +146,7 @@ Template.assignments.assignments = ->
         sel = {}
     
     return _(Assignments.find(sel).fetch()).chain()
-           .sortBy("due")
+           .sortBy((obj) -> obj.due.getTime())
            .sortBy("done")
            .groupBy("done")
            .pairs()
