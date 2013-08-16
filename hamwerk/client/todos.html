@@ -107,8 +107,14 @@
             <div class="span8 assignment-text {{text_class}}">{{text}}</div>
         {{/if}}
         <div class="item-details span3 text-right">
-            Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>
+            {{#if editing_due_date}}
+                <div class="input-prepend input-block-level">
+                    <span class="add-on">Due</span>
+                    <input id="due-date-input" type="text" value="{{editable_due_date}}" />
+                </div>
+            {{else}}
+                Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>
+            {{/if}}
         </div>
     </div>
 </template>
-

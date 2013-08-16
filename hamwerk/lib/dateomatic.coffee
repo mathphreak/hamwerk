@@ -31,7 +31,9 @@ pluralify = (rawAmount, singular) ->
         "#{amount} #{singular}s"
 
 @DateOMatic =
-    stringify: (date) -> "#{dowNames[date.getDay()]}, #{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
+    stringify: (date, dow = yes) ->
+        dowFragment = if dow then "#{dowNames[date.getDay()]}, " else ""
+        "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
     
     msDifferential: (later) -> later.getTime() - (new Date()).getTime()
     

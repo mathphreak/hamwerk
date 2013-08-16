@@ -161,6 +161,8 @@ Template.assignments.assignments = ->
 
 Template.assignment_item.precise_due_date = -> DateOMatic.stringify(@due)
 
+Template.assignment_item.editable_due_date = -> DateOMatic.stringify(@due, no)
+
 div = (a, b) -> (a - a % b) / b
 
 Template.assignment_item.fuzzy_due_date = -> if DateOMatic.isFuture(@due) then "in #{DateOMatic.fuzzyDifferential(@due)}" else "#{DateOMatic.fuzzyDifferential(@due)} ago"
@@ -170,6 +172,8 @@ Template.assignment_item.done_class = -> if this.done then "muted" else ""
 Template.assignment_item.done_checkbox = -> if this.done then "" else "-empty"
 
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
+
+Template.assignment_item.editing_due_date = -> Session.equals("editing_due_date", @_id)
 
 Template.assignment_item.text_class = ->
     if @done
@@ -193,12 +197,23 @@ Template.assignment_item.events
         Session.set "editing_itemname", this._id
         Deps.flush() # update DOM before focus
         activateInput(tmpl.find("#assignment-input"))
+    
+    "dblclick abbr": (evt, tmpl) ->
+        Session.set "editing_due_date", @_id
+        Deps.flush()
+        activateInput(tmpl.find("#due-date-input"))
 
 Template.assignment_item.events okCancelEvents "#assignment-input",
     ok: (value) ->
         Assignments.update this._id, $set: text: value
         Session.set "editing_itemname", null
     cancel: -> Session.set "editing_itemname", null
+
+Template.assignment_item.events okCancelEvents "#due-date-input",
+    ok: (value) ->
+        Assignments.update this._id, $set: due: DateOMatic.destringify(value)
+        Session.set "editing_due_date", null
+    cancel: -> Session.set "editing_due_date", null
 
 # Tracking selected class in URL #
 
