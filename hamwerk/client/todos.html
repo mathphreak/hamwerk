@@ -1,5 +1,5 @@
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <title>Hamwerk</title>
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
 </head>
@@ -95,16 +95,16 @@
 
 <template name="assignment_item">
     <div class="assignment {{done_class}} row-fluid">
-        <div class="span1 text-center">
-            <i class="destroy icon-trash"></i>
-            <a class="check" href="#"><i class="icon-check{{{done_checkbox}}}"></i></a>
-        </div>
         {{#if editing}}
-            <div class="span8 edit">
+            <div class="span9 edit">
                 <input class="input-block-level" id="assignment-input" type="text" value="{{text}}" />
             </div>
         {{else}}
-            <div class="span8 assignment-text {{text_class}}">{{text}}</div>
+            <div class="span9">
+                <i class="destroy icon-trash"></i>
+                <a class="check" href="#"><i class="icon-check{{{done_checkbox}}}"></i></a>
+                <span class="assignment-text {{text_class}}">{{text}}</span>
+            </div>
         {{/if}}
         <div class="item-details span3 text-right">
             {{#if editing_due_date}}

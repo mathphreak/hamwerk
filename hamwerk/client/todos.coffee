@@ -15,7 +15,7 @@ Session.setDefault "editing_itemname", null
 
 # Subscribe to "classes" collection on startup.
 # Select a class once data has arrived.
-classesHandle = Meteor.subscribe "classes", -> Router.setList ""
+classesHandle = Meteor.subscribe "classes", -> Router?.setList ""
 
 assignmentsHandle = null
 # Always be subscribed to the assignments for the selected class.
@@ -31,7 +31,7 @@ Deps.autorun ->
 
 Deps.autorun ->
     if !Meteor.userId()?
-        Router.setList("")
+        Router?.setList("")
 
 # Helpers for in-place editing #
 
