@@ -96,6 +96,10 @@ Template.classes.active = ->
 
 Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
+# New Assignment Box #
+
+Template.new_assignment_box.rendered = -> $("#new-assignment").typeahead source: if Session.equals("class_id", "") then _.pluck(Classes.find({}).fetch(), "name") else []
+
 # Assignments #
 
 Template.assignments.loading = -> assignmentsHandle && !assignmentsHandle.ready()
@@ -112,6 +116,10 @@ Template.assignments.events okCancelEvents "#new-assignment",
             guessedClass = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
             if guessedClass?
                 text = text.slice(guessedClass.name.length + 1)
+                if text.trim() is ""
+                    console.log "Probably used Enter to complete typeahead; we'll let it slide"
+                    evt.target.value = evt.target.value + " "
+                    return
                 class_id = guessedClass._id
             else
                 alert "No class specified"
