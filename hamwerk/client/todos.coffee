@@ -100,6 +100,15 @@ Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
 Template.new_assignment_box.rendered = -> $("#new-assignment").typeahead source: if Session.equals("class_id", "") then _.pluck(Classes.find({}).fetch(), "name") else []
 
+rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
+
+Template.new_assignment_box.sample = ->
+    task = "read chapter #{rand(1, 15)} due #{DateOMatic.getDowName(rand(0, 6))}"
+    if Session.equals("class_id", "")
+        "#{_(Classes.find().fetch()).chain().pluck('name').shuffle().value()[0]} #{task}"
+    else
+        "#{task}"
+
 # Assignments #
 
 Template.assignments.loading = -> assignmentsHandle && !assignmentsHandle.ready()

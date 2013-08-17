@@ -35,6 +35,8 @@ pluralify = (rawAmount, singular) ->
         dowFragment = if dow then "#{dowNames[date.getDay()]}, " else ""
         "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
     
+    getDowName: (dow) -> dowNames[dow]
+    
     msDifferential: (later) -> later.getTime() - (new Date()).getTime()
     
     isFuture: (later) -> @msDifferential(later) > 0
