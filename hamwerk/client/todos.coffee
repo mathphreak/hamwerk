@@ -130,7 +130,7 @@ Template.assignments.events okCancelEvents "#new-assignment",
             done: false
             timestamp: (new Date()).getTime()
         text = text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase()
-        dueDateMatch = /(.+) due (.+)/.exec text
+        dueDateMatch = /(.+) (?:due|do|for) (.+)/.exec text
         if dueDateMatch?
             newAssignment.text = dueDateMatch[1]
             newAssignment.due = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
