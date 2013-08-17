@@ -94,6 +94,7 @@
 </template>
 
 <template name="assignment_item">
+    <hr />
     <div class="assignment {{done_class}} row-fluid">
         {{#if editing}}
             <div class="span9 edit">
@@ -101,11 +102,12 @@
             </div>
         {{else}}
             <div class="span9">
-                <i class="destroy icon-trash"></i>
-                <a class="check" href="#"><i class="icon-check{{{done_checkbox}}}"></i></a>
+                <a class="check pull-left hidden-phone" href="#" style="margin-left: 0.5em;"><i class="icon-check{{{done_checkbox}}}"></i></a>
+                <i class="destroy icon-trash hidden-phone" style="margin-left: 0.5em;"></i>
                 <span class="assignment-text {{text_class}}">{{text}}</span>
             </div>
         {{/if}}
+        <a class="check pull-left visible-phone" href="#"><i class="icon-check{{{done_checkbox}}} icon-2x"></i></a>
         <div class="item-details span3 text-right">
             {{#if editing_due_date}}
                 <div class="input-prepend input-block-level">

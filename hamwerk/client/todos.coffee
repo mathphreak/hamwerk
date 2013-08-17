@@ -188,7 +188,7 @@ Template.assignment_item.text_class = ->
     return "text-success"
 
 Template.assignment_item.events
-    "click .check, tap .check": ->
+    "click .check": ->
         Assignments.update this._id, $set: done: !this.done
 
     "click .destroy": -> Assignments.remove(this._id)
