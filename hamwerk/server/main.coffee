@@ -39,7 +39,7 @@ Meteor.publish 'assignments', (class_id) ->
     throw new Meteor.Error(401, "Not logged in") unless @userId?
     if class_id is ""
         return Assignments.find({class_id: $in: _.pluck(Classes.find({user: @userId}, {fields: _id: 1}).fetch(), "_id")})
-    if Classes.findOne(class_id).user isnt @userId
+    if Classes.findOne(class_id)?.user isnt @userId
         throw new Meteor.Error(403, "This class doesn't belong to you")
     return Assignments.find(class_id: class_id)
 
