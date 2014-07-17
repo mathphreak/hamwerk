@@ -10,7 +10,7 @@
             {{> navbar}}
         </div>
     </div>
-    
+
     <div class="container-fluid">
         {{> contents}}
     </div>
@@ -26,7 +26,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div id="main-pane" class="span9">
                 {{> assignments}}
             </div>
@@ -43,7 +43,7 @@
             <a id="Intercom" href="mailto:2bb6ee6dc80fe8088dd8b40d21fa64fd5ab4db8a@incoming.intercom.io">Support</a>
         </li>
     </ul>
-    <div class="pull-right navbar-text">{{loginButtons align="right"}}</div>
+    <div class="pull-right navbar-text">{{> loginButtons align="right"}}</div>
 </template>
 
 <template name="classes">
@@ -94,7 +94,7 @@
                     {{#each assignments}}
                         {{> assignment_item}}
                     {{/each}}
-                </ul>
+                </div>
             {{/if}}
         </div>
     {{/if}}
@@ -115,12 +115,12 @@
             </div>
         {{else}}
             <div class="span9">
-                <a class="check pull-left hidden-phone" href="#" style="margin-left: 0.5em;"><i class="icon-check{{{done_checkbox}}}"></i></a>
+                <a class="check pull-left hidden-phone" href="#" style="margin-left: 0.5em;"><i class="icon-check{{done_checkbox}}"></i></a>
                 <i class="destroy icon-trash hidden-phone" style="margin-left: 0.5em;"></i>
                 <span class="assignment-text {{text_class}}">{{text}}</span>
             </div>
         {{/if}}
-        <a class="check pull-left visible-phone" href="#"><i class="icon-check{{{done_checkbox}}} icon-2x"></i></a>
+        <a class="check pull-left visible-phone" href="#"><i class="icon-check{{done_checkbox}} icon-2x"></i></a>
         <div class="item-details span3 text-right">
             {{#if editing_due_date}}
                 <div class="input-prepend input-block-level">
