@@ -12,25 +12,29 @@
     </div>
     
     <div class="container-fluid">
-        {{#if currentUser}}
-            <div class="row-fluid">
-                <div id="side-pane" class="span3">
-                    <div class="well sidebar-nav">
-                        <ul class="nav nav-list">
-                            {{> classes}}
-                        </ul>
-                    </div>
-                </div>
-                
-                <div id="main-pane" class="span9">
-                    {{> assignments}}
-                </div>
-            </div>
-        {{else}}
-            {{> landing_page}}
-        {{/if}}
+        {{> contents}}
     </div>
 </body>
+
+<template name="contents">
+    {{#if showEverything}}
+        <div class="row-fluid">
+            <div id="side-pane" class="span3">
+                <div class="well sidebar-nav">
+                    <ul class="nav nav-list">
+                        {{> classes}}
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="main-pane" class="span9">
+                {{> assignments}}
+            </div>
+        </div>
+    {{else}}
+        {{> landing_page}}
+    {{/if}}
+</template>
 
 <template name="navbar">
     <a class="brand" href="/">Hamwerk</a>
@@ -66,12 +70,14 @@
                 {{/if}}
             </li>
         {{/each}}
-        <li class="divider"></li>
-        <li id="createList" class="nav-header">
-            <div class="row-fluid">
-                <input type="text" id="new-class" placeholder="New class" class="span12" />
-            </div>
-        </li>
+        {{#if show_create}}
+            <li class="divider"></li>
+            <li id="createList" class="nav-header">
+                <div class="row-fluid">
+                    <input type="text" id="new-class" placeholder="New class" class="span12" />
+                </div>
+            </li>
+        {{/if}}
     {{/if}}
 </template>
 
@@ -81,7 +87,9 @@
             {{#if loading}}
                 <i class="icon-spinner icon-spin"></i> Loading...
             {{else}}
-                {{> new_assignment_box}}
+                {{#if show_create}}
+                    {{> new_assignment_box}}
+                {{/if}}
                 <div>
                     {{#each assignments}}
                         {{> assignment_item}}

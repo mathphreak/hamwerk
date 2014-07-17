@@ -5,7 +5,7 @@ if [ ! -d /home/vagrant/hamwerk ]; then
     cd /home/vagrant
     su vagrant -c 'meteor create hamwerk'
     cd hamwerk
-    su vagrant -c 'meteor add coffeescript less bootstrap backbone accounts-password accounts-ui'
+    su vagrant -c 'meteor add coffeescript less bootstrap backbone accounts-password accounts-ui appcache amplify'
     su vagrant -c 'meteor remove autopublish insecure'
     cd /vagrant/hamwerk
     rm -vrf .meteor

@@ -24,20 +24,21 @@ dowNames = [
 ]
 
 pluralify = (rawAmount, singular) ->
-    amount = Math.round(rawAmount, 0)
+    amount = Math.ceil(rawAmount, 0)
     if amount is 1
         "#{amount} #{singular}"
     else
         "#{amount} #{singular}s"
 
 @DateOMatic =
-    stringify: (date, dow = yes) ->
+    stringify: (fakeDate, dow = yes) ->
+        date = new Date(fakeDate)
         dowFragment = if dow then "#{dowNames[date.getDay()]}, " else ""
         "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
     
     getDowName: (dow) -> dowNames[dow]
     
-    msDifferential: (later) -> later.getTime() - (new Date()).getTime()
+    msDifferential: (later) -> new Date(later).getTime() - (new Date()).getTime()
     
     isFuture: (later) -> @msDifferential(later) > 0
     
@@ -102,6 +103,8 @@ pluralify = (rawAmount, singular) ->
                 result.setFullYear(result.getFullYear() + 1)
         else if absoluteDateMatches
             return @destringify(dateString)
+        else
+            return null
         result.setHours(0)
         result.setMinutes(0)
         result.setSeconds(0)

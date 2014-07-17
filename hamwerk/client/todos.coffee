@@ -4,6 +4,8 @@
 @Classes = new Meteor.Collection "classes"
 @Assignments = new Meteor.Collection "assignments"
 
+@online = -> Meteor.status().status is "connected"
+
 # ID of currently selected class
 Session.setDefault "class_id", null
 
@@ -17,15 +19,17 @@ Session.setDefault "editing_itemname", null
 # Select a class once data has arrived.
 classesHandle = Meteor.subscribe "classes", -> Router?.setList ""
 
+Meteor.setTimeout (-> Router?.setList("")), 20
+
 assignmentsHandle = null
 # Always be subscribed to the assignments for the selected class.
 Deps.autorun ->
     class_id = Session.get "class_id"
-    console.log Meteor.userId()
-    if class_id?
+    if class_id
         assignmentsHandle = Meteor.subscribe("assignments", class_id)
     else if class_id is ""
         assignmentsHandle = Meteor.subscribe("assignments", "")
+        Offline.save()
     else
         assignmentsHandle = null
 
@@ -58,13 +62,20 @@ activateInput = (input) ->
     input.focus()
     input.select()
 
+Template.contents.showEverything = ->
+    return true if Meteor.userId()?
+    return true if !online
+    return false
+
 # Classes #
 
-Template.classes.loading = -> !classesHandle.ready()
+Template.classes.loading = -> !classesHandle.ready() and online()
 
-Template.classes.classes = -> return Classes.find {}, sort: name: 1
+Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name: 1
 
 Template.classes.fake_all_class_list = -> [_id: ""]
+
+Template.classes.show_create = Template.assignments.show_create = -> online()
 
 Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
@@ -77,14 +88,14 @@ Template.classes.events
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
     ok: (text, evt) ->
-        id = Classes.insert name: text, user: Meteor.userId()
+        id = Offline.smart.classes().insert name: text, user: Meteor.userId()
         Router.setList(id)
         evt.target.value = ""
 
 Template.classes.events okCancelEvents "#class-name-input",
     ok: (value) ->
         if value isnt ""
-            Classes.update this._id, $set: name: value
+            Offline.smart.classes().update this._id, $set: name: value
         else
             Meteor.call "nukeClass", this._id, -> Session.set "class_id", ""
         Session.set "editing_classname", null
@@ -98,20 +109,20 @@ Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
 # New Assignment Box #
 
-Template.new_assignment_box.rendered = -> $("#new-assignment").typeahead source: if Session.equals("class_id", "") then _.pluck(Classes.find({}).fetch(), "name") else []
+Template.new_assignment_box.rendered = -> $("#new-assignment").typeahead source: if Session.equals("class_id", "") then _.pluck(Offline.smart.classes().find({}).fetch(), "name") else []
 
 rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
 
 Template.new_assignment_box.sample = ->
     task = "read chapter #{rand(1, 15)} due #{DateOMatic.getDowName(rand(0, 6))}"
     if Session.equals("class_id", "")
-        "#{_(Classes.find().fetch()).chain().pluck('name').shuffle().value()[0]} #{task}"
+        "#{_(Offline.smart.classes().find().fetch()).chain().pluck('name').shuffle().value()[0]} #{task}"
     else
         "#{task}"
 
 # Assignments #
 
-Template.assignments.loading = -> assignmentsHandle && !assignmentsHandle.ready()
+Template.assignments.loading = -> online() && (assignmentsHandle && !assignmentsHandle.ready())
 
 Template.assignments.any_class_selected = -> !Session.equals("class_id", null)
 
@@ -121,7 +132,7 @@ Template.assignments.events okCancelEvents "#new-assignment",
         class_id = Session.get("class_id")
         if !class_id
             lowercaseText = text.toLowerCase()
-            classes = Classes.find({}, fields: name: 1).fetch()
+            classes = Offline.smart.classes().find({}, fields: name: 1).fetch()
             guessedClass = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
             if guessedClass?
                 text = text.slice(guessedClass.name.length + 1)
@@ -140,13 +151,16 @@ Template.assignments.events okCancelEvents "#new-assignment",
             timestamp: (new Date()).getTime()
         text = text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase()
         dueDateMatch = /(.+) (?:due|do|for) (.+)/.exec text
+        parsedDate = DateOMatic.parseFuzzyFutureDate("tomorrow")
+        newAssignment.text = text
+        newAssignment.due = parsedDate
         if dueDateMatch?
-            newAssignment.text = dueDateMatch[1]
-            newAssignment.due = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
-        else
-            newAssignment.text = text
-            newAssignment.due = DateOMatic.parseFuzzyFutureDate("tomorrow")
-        Assignments.insert newAssignment
+            parsedDate = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
+            if parsedDate isnt null
+                newAssignment.text = dueDateMatch[1]
+                newAssignment.due = parsedDate
+        Offline.smart.assignments().insert newAssignment
+        Offline.save()
         evt.target.value = ""
 
 logify = _.bind(console.log, console)
@@ -162,16 +176,16 @@ Template.assignments.assignments = ->
     if class_id is ""
         sel = {}
     
-    return _(Assignments.find(sel).fetch()).chain()
-           .sortBy((obj) -> obj.due.getTime())
+    return _(Offline.smart.assignments().find(sel).fetch()).chain()
+           .sortBy((obj) -> new Date(obj.due).getTime())
            .sortBy("done")
            .groupBy("done")
            .pairs()
            .map(([truthiness, list]) -> _.sortBy(list, (obj) -> 
                 if truthiness is "true"
-                    Math.abs(DateOMatic.msDifferential(obj.due))
+                    Math.abs(DateOMatic.msDifferential(new Date(obj.due)))
                 else
-                    obj.due.getTime()
+                    new Date(obj.due).getTime()
             ))
            .reduce(((memo, list) -> memo.concat(list)), [])
            .value()
@@ -195,20 +209,23 @@ Template.assignment_item.editing_due_date = -> Session.equals("editing_due_date"
 Template.assignment_item.text_class = ->
     if @done
         return "text-muted"
-    msLeft = @due.getTime() - (new Date()).getTime()
+    msLeft = new Date(@due).getTime() - (new Date()).getTime()
     if msLeft < 0
         return "text-error"
     if div(msLeft, 1000 * 60 * 60) < 24
         return "text-warning"
-    if div(msLeft, 1000 * 60 * 60 * 24) < 3
+    if div(msLeft, 1000 * 60 * 60 * 24) < 2
         return "text-info"
     return "text-success"
 
 Template.assignment_item.events
     "click .check": ->
-        Assignments.update this._id, $set: done: !this.done
+        Offline.smart.assignments().update this._id, $set: done: !this.done
+        Offline.save()
 
-    "click .destroy": -> Assignments.remove(this._id)
+    "click .destroy": ->
+        Offline.smart.assignments().remove(this._id)
+        Offline.save()
 
     "dblclick .assignment-text": (evt, tmpl) ->
         Session.set "editing_itemname", this._id
@@ -222,14 +239,16 @@ Template.assignment_item.events
 
 Template.assignment_item.events okCancelEvents "#assignment-input",
     ok: (value) ->
-        Assignments.update this._id, $set: text: value
+        Offline.smart.assignments().update this._id, $set: text: value
         Session.set "editing_itemname", null
+        Offline.save()
     cancel: -> Session.set "editing_itemname", null
 
 Template.assignment_item.events okCancelEvents "#due-date-input",
     ok: (value) ->
-        Assignments.update this._id, $set: due: DateOMatic.destringify(value)
+        Offline.smart.assignments().update this._id, $set: due: DateOMatic.destringify(value)
         Session.set "editing_due_date", null
+        Offline.save()
     cancel: -> Session.set "editing_due_date", null
 
 # Tracking selected class in URL #
