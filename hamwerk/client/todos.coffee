@@ -175,13 +175,13 @@ Template.assignments.assignments = ->
     sel = class_id: class_id
     if class_id is ""
         sel = {}
-    
+
     return _(Offline.smart.assignments().find(sel).fetch()).chain()
            .sortBy((obj) -> new Date(obj.due).getTime())
            .sortBy("done")
            .groupBy("done")
            .pairs()
-           .map(([truthiness, list]) -> _.sortBy(list, (obj) -> 
+           .map(([truthiness, list]) -> _.sortBy(list, (obj) ->
                 if truthiness is "true"
                     Math.abs(DateOMatic.msDifferential(new Date(obj.due)))
                 else
@@ -231,7 +231,7 @@ Template.assignment_item.events
         Session.set "editing_itemname", this._id
         Deps.flush() # update DOM before focus
         activateInput(tmpl.find("#assignment-input"))
-    
+
     "dblclick abbr": (evt, tmpl) ->
         Session.set "editing_due_date", @_id
         Deps.flush()
@@ -290,71 +290,8 @@ loadIntercomActual = (force) ->
 loadIntercom = (force = no) ->
     return Meteor.setTimeout((-> loadIntercomActual(force)), 250)
 
-loadOlark = ->
-    window.olark || ((c) ->
-        l = `window.location.protocol == "https:" ? "https:" : "http:"`
-        nt = ->
-            window[c.name] = ->
-                (a.s = a.s || []).push(arguments)
-            a = window[c.name]._ = {}
-            q = c.methods.length
-            while (q--)
-                ((n) ->
-                    window[c.name][c.methods[q]] = ->
-                        window[c.name]("call", n, arguments)
-                )(c.methods[q])
-            a.l = c.loader
-            a.i = nt
-            a.p = 0: +new Date
-            a.P = (u) -> a.p[u] = new Date - a.p[0]
-
-            s = ->
-                a.P("load")
-                window[c.name]("load")
-            `window.addEventListener ? window.addEventListener("load", s, false) : window.attachEvent("onload", s)`
-            ld = ->
-                p = -> "<head></head><body onload=\"document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).src='#{l}//#{c.loader}'\"></body>"
-                m = document.body
-                if (!m)
-                    return Meteor.setTimeout(ld, 100)
-                a.P(1)
-                n = document.createElement("div")
-                v = n.appendChild(document.createElement(c.name))
-                b = document.createElement("iframe")
-                n.style.display = "none"
-                m.insertBefore(n, m.firstChild).id = c.name
-                b.frameBorder = "0"
-                b.id = c.name + "-loader"
-                if /MSIE[ ]+6/.test(navigator.userAgent)
-                    b.src = "javascript:false"
-                b.allowTransparency = "true"
-                v.appendChild(b)
-                try 
-                    b.contentWindow.document.open()
-                catch
-                    c.domain = document.domain;
-                    o = "javascript:var d=document.open();d.domain='#{document.domain}';";
-                    b.src = o + "void(0);"
-                try
-                    t = b.contentWindow.document
-                    t.write(p())
-                    t.close()
-                catch
-                    b.src = o + 'd.write("' + p().replace(/"/g, String.fromCharCode(92) + '"') + '");d.close();'
-                a.P(2)
-            ld()
-        nt()
-    )({
-        loader: "static.olark.com/jsclient/loader0.js",
-        name: "olark",
-        methods: ["configure", "extend", "declare", "identify"]
-    })
-    # custom configuration goes here (www.olark.com/documentation)
-    olark.identify('8586-972-10-1233');
-
 Meteor.startup ->
     Backbone.history.start pushState: true
-    loadOlark()
     Meteor.call "hash", (error, user_hash) ->
         window.intercomSettings =
             # TODO: The current logged in user's email address.
