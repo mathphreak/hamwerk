@@ -1,34 +1,32 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <title>Hamwerk</title>
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="navbar navbar-static-top">
-        <div class="navbar-inner">
+    <div class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
             {{> navbar}}
         </div>
     </div>
 
-    <div class="container-fluid">
-        {{> contents}}
-    </div>
+    {{> contents}}
 </body>
 
 <template name="contents">
     {{#if showEverything}}
-        <div class="row-fluid">
-            <div id="side-pane" class="span3">
-                <div class="well sidebar-nav">
-                    <ul class="nav nav-list">
+        <div class="container-fluid">
+            <div class="row">
+                <div id="side-pane" class="col-md-3">
+                    <div class="list-group">
                         {{> classes}}
-                    </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div id="main-pane" class="span9">
-                {{> assignments}}
+                <div id="main-pane" class="col-md-9">
+                    {{> assignments}}
+                </div>
             </div>
         </div>
     {{else}}
@@ -37,9 +35,11 @@
 </template>
 
 <template name="navbar">
-    <a class="brand" href="/">Hamwerk</a>
-    <ul class="nav">
-        <li>
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">Hamwerk</a>
+    </div>
+    <ul class="nav navbar-nav">
+        <li id="intercom-wrapper">
             <a id="Intercom" href="mailto:2bb6ee6dc80fe8088dd8b40d21fa64fd5ab4db8a@incoming.intercom.io">Old Support - Do Not Use</a>
         </li>
     </ul>
@@ -48,49 +48,43 @@
 
 <template name="classes">
     {{#each fake_all_class_list}}
-        <li class="class {{active}}"><a href="/">All Classes</a></li>
+        <a class="class list-group-item {{active}}" href="/">All Classes</a>
     {{/each}}
-    <li class="nav-header">Classes</li>
     {{#if loading}}
-        <li class="nav-header">
-            <i class="icon-spinner icon-spin"></i>
+        <div class="list-group-item">
+            <i class="fa fa-spinner fa-spin"></i>
             Loading...
-        </li>
+        </div>
     {{else}}
         {{#each classes}}
-            <li class="class {{active}}">
-                {{#if editing}}
-                    <div class="edit">
-                        <input class="class-name-input" id="class-name-input" type="text" value="{{name}}" />
-                    </div>
-                {{else}}
-                    <a class="class-name" href="/{{_id}}">
-                        {{name}}
-                    </a>
-                {{/if}}
-            </li>
+            {{#if editing}}
+                <div class="edit list-group-item">
+                    <input class="class-name-input" id="class-name-input" type="text" value="{{name}}" />
+                </div>
+            {{else}}
+                <a class="class-name list-group-item" href="/{{_id}}">
+                    {{name}}
+                </a>
+            {{/if}}
         {{/each}}
         {{#if show_create}}
-            <li class="divider"></li>
-            <li id="createList" class="nav-header">
-                <div class="row-fluid">
-                    <input type="text" id="new-class" placeholder="New class" class="span12" />
-                </div>
-            </li>
+            <div id="createList" class="nav-header list-group-item">
+                <span>
+                    <input type="text" id="new-class" placeholder="New class" class="form-control" />
+                </span>
+            </div>
         {{/if}}
     {{/if}}
 </template>
 
 <template name="assignments">
     {{#if any_class_selected}}
-        <div id="items-view">
+        <div id="items-view" class="container-fluid">
             {{#if loading}}
-                <i class="icon-spinner icon-spin"></i> Loading...
+                <i class="fa fa-spinner fa-spin"></i> Loading...
             {{else}}
-                {{#if show_create}}
+                <div class="list-group">
                     {{> new_assignment_box}}
-                {{/if}}
-                <div>
                     {{#each assignments}}
                         {{> assignment_item}}
                     {{/each}}
@@ -101,31 +95,32 @@
 </template>
 
 <template name="new_assignment_box">
-    <div class="row-fluid">
-        <input type="text" id="new-assignment" placeholder="e.g. {{sample}}" class="span12" autocomplete="off" data-provide="typeahead" />
+    <div class="list-group-item row">
+        <span class="form-group">
+            <input type="text" id="new-assignment" placeholder="e.g. {{sample}}" class="form-control" {{disabled}}/>
+        </span>
     </div>
 </template>
 
 <template name="assignment_item">
-    <hr />
-    <div class="assignment {{done_class}} row-fluid">
+    <div class="assignment {{done_class}} list-group-item row">
         {{#if editing}}
-            <div class="span9 edit">
-                <input class="input-block-level" id="assignment-input" type="text" value="{{text}}" />
+            <div class="col-md-9 edit">
+                <input class="form-control input-sm" id="assignment-input" type="text" value="{{text}}" />
             </div>
         {{else}}
-            <div class="span9">
-                <a class="check pull-left hidden-phone" href="#" style="margin-left: 0.5em;"><i class="icon-check{{done_checkbox}}"></i></a>
-                <i class="destroy icon-trash hidden-phone" style="margin-left: 0.5em;"></i>
+            <div class="col-md-9">
+                <a class="check pull-left hidden-xs" href="#" style="margin-left: 0.5em;"><i class="fa fa-{{done_checkbox}}square"></i></a>
+                <i class="destroy fa fa-trash-o hidden-xs" style="margin-left: 0.5em;"></i>
                 <span class="assignment-text {{text_class}}">{{text}}</span>
             </div>
         {{/if}}
-        <a class="check pull-left visible-phone" href="#"><i class="icon-check{{done_checkbox}} icon-2x"></i></a>
-        <div class="item-details span3 text-right">
+        <a class="check pull-left visible-xs" href="#"><i class="fa fa-{{done_checkbox}}square fa-2x"></i></a>
+        <div class="item-details col-md-3 text-right">
             {{#if editing_due_date}}
-                <div class="input-prepend input-block-level">
-                    <span class="add-on">Due</span>
-                    <input id="due-date-input" type="text" value="{{editable_due_date}}" />
+                <div class="input-group">
+                    <span class="input-group-addon">Due</span>
+                    <input id="due-date-input" type="text" value="{{editable_due_date}}" class="form-control input-sm" />
                 </div>
             {{else}}
                 Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>

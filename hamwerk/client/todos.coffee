@@ -39,23 +39,28 @@ Deps.autorun ->
 
 # Helpers for in-place editing #
 
-# Returns an event map that handles the "escape" and "return" keys and
-# "blur" events on a text input (given by selector) and interprets them
+# Returns an event map that handles the "return" and "escape" keys
+# on a text input (given by selector) and interprets them
 # as "ok" or "cancel".
 okCancelEvents = (selector, callbacks) ->
     ok = callbacks.ok || ->
     cancel = callbacks.cancel || ->
+    dirty = callbacks.dirty || ->
 
     events = {}
     events["keyup #{selector}, keydown #{selector}, focusout #{selector}"] =
         (evt) ->
-            if evt.type is "keydown" && evt.which is 27
+            if evt.type is "keydown" and evt.which is 27
                 # escape = cancel
                 cancel.call(this, evt)
-            else if evt.type is "keyup" && evt.which is 13 || evt.type is "focusout"
-                # blur/return/enter = ok/submit if non-empty
-                value = String(evt.target.value || "")
-                ok.call(this, value, evt)
+            else if evt.type is "keyup"
+                if evt.which is 13
+                    # return/enter = ok/submit if non-empty
+                    value = String(evt.target.value || "")
+                    ok.call(this, value, evt)
+                else
+                    value = String(evt.target.value || "")
+                    dirty.call(this, value, evt)
     return events
 
 activateInput = (input) ->
@@ -75,7 +80,8 @@ Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name
 
 Template.classes.fake_all_class_list = -> [_id: ""]
 
-Template.classes.show_create = Template.assignments.show_create = -> online()
+Template.classes.show_create = -> yes
+Template.new_assignment_box.disabled = -> if online() then "" else "disabled"
 
 Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
@@ -109,8 +115,6 @@ Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
 # New Assignment Box #
 
-Template.new_assignment_box.rendered = -> $("#new-assignment").typeahead source: if Session.equals("class_id", "") then _.pluck(Offline.smart.classes().find({}).fetch(), "name") else []
-
 rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
 
 Template.new_assignment_box.sample = ->
@@ -137,13 +141,13 @@ Template.assignments.events okCancelEvents "#new-assignment",
             if guessedClass?
                 text = text.slice(guessedClass.name.length + 1)
                 if text.trim() is ""
-                    console.log "Probably used Enter to complete typeahead; we'll let it slide"
-                    evt.target.value = evt.target.value + " "
+                    alert "No assignment specified"
+                    $("#new-assignment").parent().addClass("has-error")
                     return
                 class_id = guessedClass._id
             else
                 alert "No class specified"
-                evt.target.value = ""
+                $("#new-assignment").parent().addClass("has-error")
                 return
         newAssignment =
             class_id: class_id
@@ -162,8 +166,30 @@ Template.assignments.events okCancelEvents "#new-assignment",
         Offline.smart.assignments().insert newAssignment
         Offline.save()
         evt.target.value = ""
-
-logify = _.bind(console.log, console)
+    dirty: (text, evt) ->
+        $("#new-assignment").parent().removeClass("has-error")
+        return unless text
+        class_id = Session.get("class_id")
+        if !class_id
+            lowercaseText = text.toLowerCase()
+            classes = Offline.smart.classes().find({}, fields: name: 1).fetch()
+            guessedClass = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
+            if guessedClass?
+                text = text.slice(guessedClass.name.length + 1)
+                if text.trim() is ""
+                    $("#new-assignment").parent().addClass("has-error")
+                    return
+                class_id = guessedClass._id
+            else
+                $("#new-assignment").parent().addClass("has-error")
+                return
+        dueDateMatch = /(.+) (?:due|do|for) (.+)/.exec text
+        if dueDateMatch?
+            parsedDate = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
+            if parsedDate is null
+                # tried and failed to specify a valid date
+                $("#new-assignment").parent().addClass("has-error")
+                return
 
 Template.assignments.assignments = ->
     # Determine which assignments to display in main pane,
@@ -200,7 +226,7 @@ Template.assignment_item.fuzzy_due_date = -> if DateOMatic.isFuture(@due) then "
 
 Template.assignment_item.done_class = -> if this.done then "muted" else ""
 
-Template.assignment_item.done_checkbox = -> if this.done then "" else "-empty"
+Template.assignment_item.done_checkbox = -> if this.done then "check-" else ""
 
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
 
@@ -211,7 +237,7 @@ Template.assignment_item.text_class = ->
         return "text-muted"
     msLeft = new Date(@due).getTime() - (new Date()).getTime()
     if msLeft < 0
-        return "text-error"
+        return "text-danger"
     if div(msLeft, 1000 * 60 * 60) < 24
         return "text-warning"
     if div(msLeft, 1000 * 60 * 60 * 24) < 2
