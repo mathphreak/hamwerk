@@ -95,7 +95,6 @@ Template.classes.events
 Template.classes.events okCancelEvents "#new-class",
     ok: (text, evt) ->
         id = Offline.smart.classes().insert name: text, user: Meteor.userId()
-        Router.setList(id)
         evt.target.value = ""
 
 Template.classes.events okCancelEvents "#class-name-input",
