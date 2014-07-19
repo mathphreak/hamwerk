@@ -231,17 +231,17 @@ Template.assignment_item.editing = -> Session.equals("editing_itemname", this._i
 
 Template.assignment_item.editing_due_date = -> Session.equals("editing_due_date", @_id)
 
-Template.assignment_item.text_class = ->
+Template.assignment_item.color_class = ->
     if @done
-        return "text-muted"
+        return "list-group-item-success"
     msLeft = new Date(@due).getTime() - (new Date()).getTime()
     if msLeft < 0
-        return "text-danger"
+        return "list-group-item-danger"
     if div(msLeft, 1000 * 60 * 60) < 24
-        return "text-warning"
+        return "list-group-item-warning"
     if div(msLeft, 1000 * 60 * 60 * 24) < 2
-        return "text-info"
-    return "text-success"
+        return "list-group-item-info"
+    return ""
 
 Template.assignment_item.events
     "click .check": ->

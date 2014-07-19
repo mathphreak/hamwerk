@@ -58,8 +58,8 @@ Meteor.methods
 createOnboarding = (user) ->
     userId = user._id
     assignments = [
-        ["Check off this assignment as complete by pressing the black box to its left", "today"]
-        ["Delete the next assignment by pressing the trash icon next to the black box", "tomorrow"]
+        ["Check off this assignment as complete by pressing the white box to its left", "today"]
+        ["Delete the next assignment by pressing the trash icon on the right", "tomorrow"]
         ["THIS ASSIGNMENT NEEDS TO BE DELETED", "2 days from now"]
         ["Edit the text of this assignment by double-clicking it, changing it, and pressing Enter", "3 days from now"]
         ["Edit the due date of this assignment by double-clicking the due date, entering a new date, and pressing Enter", "3 days from now"]

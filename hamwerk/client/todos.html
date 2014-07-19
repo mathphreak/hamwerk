@@ -18,13 +18,13 @@
     {{#if showEverything}}
         <div class="container-fluid">
             <div class="row">
-                <div id="side-pane" class="col-md-3">
+                <div id="side-pane" class="col-sm-3">
                     <div class="list-group">
                         {{> classes}}
                     </div>
                 </div>
 
-                <div id="main-pane" class="col-md-9">
+                <div id="main-pane" class="col-sm-9">
                     {{> assignments}}
                 </div>
             </div>
@@ -101,20 +101,19 @@
 </template>
 
 <template name="assignment_item">
-    <div class="assignment {{done_class}} list-group-item row">
+    <div class="assignment {{done_class}} list-group-item row {{color_class}}">
         {{#if editing}}
-            <div class="col-md-9 edit">
+            <div class="col-sm-9 edit">
                 <input class="form-control input-sm" id="assignment-input" type="text" value="{{text}}" />
             </div>
         {{else}}
-            <div class="col-md-9">
-                <a class="check pull-left hidden-xs" href="#" style="margin-left: 0.5em;"><i class="fa fa-{{done_checkbox}}square"></i></a>
-                <i class="destroy fa fa-trash-o hidden-xs" style="margin-left: 0.5em;"></i>
-                <span class="assignment-text {{text_class}}">{{text}}</span>
+            <div class="col-sm-9">
+                <i class="fa fa-{{done_checkbox}}square-o fa-fw fa-lg check pull-left visible-xs"></i>
+                <i class="fa fa-{{done_checkbox}}square-o fa-fw check hidden-xs"></i>
+                <span class="assignment-text">{{text}}</span>
             </div>
         {{/if}}
-        <a class="check pull-left visible-xs" href="#"><i class="fa fa-{{done_checkbox}}square fa-2x"></i></a>
-        <div class="item-details col-md-3 text-right">
+        <div class="item-details col-sm-3 text-right">
             {{#if editing_due_date}}
                 <div class="input-group">
                     <span class="input-group-addon">Due</span>
@@ -122,6 +121,8 @@
                 </div>
             {{else}}
                 Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>
+                <i class="destroy fa fa-trash-o hidden-xs fa-fw"></i>
+                <i class="destroy fa fa-trash-o visible-xs fa-fw fa-lg pull-right"></i>
             {{/if}}
         </div>
     </div>
