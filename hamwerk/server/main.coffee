@@ -56,7 +56,6 @@ Meteor.methods
             throw new Meteor.Error(403, "This class doesn't belong to you")
 
 createOnboarding = (user) ->
-    console.log "Creating onboarding for #{user.username}..."
     userId = user._id
     assignments = [
         ["Check off this assignment as complete by pressing the black box to its left", "today"]
