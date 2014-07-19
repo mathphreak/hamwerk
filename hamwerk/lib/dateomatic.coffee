@@ -24,7 +24,7 @@ dowNames = [
 ]
 
 pluralify = (rawAmount, singular) ->
-    amount = Math.ceil(rawAmount, 0)
+    amount = Math.floor(rawAmount, 0)
     if amount is 1
         "#{amount} #{singular}"
     else
@@ -35,13 +35,13 @@ pluralify = (rawAmount, singular) ->
         date = new Date(fakeDate)
         dowFragment = if dow then "#{dowNames[date.getDay()]}, " else ""
         "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
-    
+
     getDowName: (dow) -> dowNames[dow]
-    
+
     msDifferential: (later) -> new Date(later).getTime() - (new Date()).getTime()
-    
+
     isFuture: (later) -> @msDifferential(later) > 0
-    
+
     fuzzyDifferential: (later) ->
         diff = @msDifferential(later)
         diff = -diff unless @isFuture(later)
@@ -65,7 +65,7 @@ pluralify = (rawAmount, singular) ->
             return pluralify(monthsDiff, 'month')
         yearsDiff = daysDiff / 365
         return pluralify(yearsDiff, 'year')
-    
+
     destringify: (dateString) ->
         chunks = dateString.split(" ").map((x) -> if /,$/.test(x) then x.slice(0, -1) else x)
         if chunks.length is 4
@@ -76,7 +76,7 @@ pluralify = (rawAmount, singular) ->
         if dow? and dowNames[result.getDay()] isnt dow
             throw new Error("Wrong day of week")
         return result
-    
+
     parseFuzzyFutureDate: (input) ->
         result = new Date
         dateString = input.slice(0, 1).toUpperCase() + input.slice(1).toLowerCase()
