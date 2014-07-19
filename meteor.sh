@@ -1,8 +1,8 @@
 #!/bin/bash
 if [ ! -d /home/vagrant/hamwerk ]; then
     sudo apt-get install -y curl
-    curl https://install.meteor.com | sudo sh
     cd /home/vagrant
+    su vagrant -c 'curl https://install.meteor.com | sh'
     su vagrant -c 'meteor create hamwerk'
     cd hamwerk
     su vagrant -c 'meteor add coffeescript less jquery backbone accounts-password accounts-ui appcache amplify'
