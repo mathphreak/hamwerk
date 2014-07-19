@@ -80,7 +80,7 @@ Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name
 
 Template.classes.fake_all_class_list = -> [_id: ""]
 
-Template.classes.show_create = -> yes
+Template.classes.create_disabled = -> if online() then "" else "disabled"
 Template.new_assignment_box.disabled = -> if online() then "" else "disabled"
 
 Template.classes.events

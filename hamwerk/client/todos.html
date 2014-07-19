@@ -67,13 +67,11 @@
                 </a>
             {{/if}}
         {{/each}}
-        {{#if show_create}}
-            <div id="createList" class="nav-header list-group-item">
-                <span>
-                    <input type="text" id="new-class" placeholder="New class" class="form-control" />
-                </span>
-            </div>
-        {{/if}}
+        <div id="createList" class="nav-header list-group-item">
+            <span>
+                <input type="text" id="new-class" placeholder="New class" class="form-control" {{create_disabled}}/>
+            </span>
+        </div>
     {{/if}}
 </template>
 
