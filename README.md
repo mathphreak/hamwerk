@@ -9,5 +9,4 @@ Development
 
     vagrant up
     vagrant ssh
-    $ cd /vagrant/hamwerk
     $ meteor

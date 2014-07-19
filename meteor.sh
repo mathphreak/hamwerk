@@ -11,4 +11,5 @@ if [ ! -d /home/vagrant/hamwerk ]; then
     rm -vrf .meteor
     mkdir .meteor
     echo "sudo mount --bind /home/vagrant/hamwerk/.meteor/ /vagrant/hamwerk/.meteor/" >> /home/vagrant/.bashrc
+    echo "cd /vagrant/hamwerk" >> /home/vagrant/.bashrc
 fi
