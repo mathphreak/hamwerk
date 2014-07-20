@@ -20,16 +20,18 @@ Session.setDefault "editing_itemname", null
 classesHandle = Meteor.subscribe "classes", -> Router?.setList ""
 
 Meteor.setTimeout (-> Router?.setList("")), 20
-Meteor.setInterval Offline.save, 1000
+Meteor.setInterval Offline.save, 250
 
-assignmentsHandle = null
-# Always be subscribed to the assignments for the selected class.
-Deps.autorun ->
-    assignmentsHandle = Meteor.subscribe("assignments")
+Meteor.subscribe("assignments")
 
 Deps.autorun ->
     if !Meteor.userId()?
         Router?.setList("")
+
+Deps.autorun ->
+    if Meteor.user()?.profile?
+        if not Meteor.user().profile.onboarded
+            Meteor.call "onboardMe", new Date().getTimezoneOffset(), -> Meteor.subscribe "assignments"
 
 # Helpers for in-place editing #
 
@@ -86,8 +88,10 @@ Template.classes.events
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
     ok: (text, evt) ->
-        id = Offline.smart.classes().insert {name: text, user: Meteor.userId()}, ->
-            assignmentsHandle = Meteor.subscribe("assignments")
+        if text is "Hamwerk 101"
+            Meteor.users.update(Meteor.userId(), {$set: {profile: {onboarded: false}}})
+        else
+            id = Offline.smart.classes().insert {name: text, user: Meteor.userId()}, -> Meteor.subscribe("assignments")
         evt.target.value = ""
 
 Template.classes.events okCancelEvents "#class-name-input",
