@@ -44,10 +44,6 @@ Meteor.publish 'assignments', (class_id) ->
     return Assignments.find(class_id: class_id)
 
 Meteor.methods
-    hash: ->
-        email = Meteor.users.findOne(_id: @userId)?.emails[0].address
-        hash = CryptoJS.HmacSHA256(email, intercomSecrets.secret_key)
-        return hash.toString()
     nukeClass: (class_id) ->
         if Classes.findOne(class_id).user is @userId
             Classes.remove class_id

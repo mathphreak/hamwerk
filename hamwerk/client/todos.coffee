@@ -289,42 +289,5 @@ AssignmentsRouter = Backbone.Router.extend
 
 Router = new AssignmentsRouter
 
-loadIntercomActual = (force) ->
-    if _.isFunction(window.Intercom)
-        window.Intercom('reattach_activator')
-        window.Intercom('update', intercomSettings)
-    else
-        i = (stuff...) -> i.c(stuff)
-        i.q = []
-        i.c = (args) -> i.q.push(args)
-        window.Intercom = i
-        l = ->
-            s = document.createElement('script')
-            s.type = 'text/javascript'
-            s.async = true
-            s.src = 'https://static.intercomcdn.com/intercom.v1.js'
-            x = document.getElementsByTagName('script')[0]
-            x.parentNode.insertBefore(s, x)
-        if force
-            l()
-        else if w.attachEvent?
-            w.attachEvent('onload', l)
-        else
-            w.addEventListener('load', l, false)
-
-loadIntercom = (force = no) ->
-    return Meteor.setTimeout((-> loadIntercomActual(force)), 250)
-
 Meteor.startup ->
     Backbone.history.start pushState: true
-    Meteor.call "hash", (error, user_hash) ->
-        window.intercomSettings =
-            # TODO: The current logged in user's email address.
-            email: Meteor.user()?.emails[0].address
-            swag_level: 100
-            # TODO: The current logged in user's sign-up date as a Unix timestamp.
-            created_at: Meteor.user()?.createdAt
-            "widget": "activator": "#Intercom"
-            app_id: "2bb6ee6dc80fe8088dd8b40d21fa64fd5ab4db8a"
-            user_hash: user_hash
-        loadIntercom yes
