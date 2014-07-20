@@ -94,5 +94,7 @@ Meteor.methods
 Accounts.onCreateUser (options, user) ->
     if options.profile?
         user.profile = options.profile
+    else
+        user.profile = {}
     user.profile.onboarded = no
     return user
