@@ -48,46 +48,33 @@
     {{#each fake_all_class_list}}
         <a class="class list-group-item {{active}}" href="/">All Classes</a>
     {{/each}}
-    {{#if loading}}
-        <div class="list-group-item">
-            <i class="fa fa-spinner fa-spin"></i>
-            Loading...
-        </div>
-    {{else}}
-        {{#each classes}}
-            {{#if editing}}
-                <div class="edit list-group-item">
-                    <input class="class-name-input form-control" id="class-name-input" type="text" value="{{name}}" />
-                </div>
-            {{else}}
-                <a class="class list-group-item {{active}}" href="/{{_id}}">
-                    {{name}}
-                </a>
-            {{/if}}
-        {{/each}}
-        <div id="createList" class="nav-header list-group-item">
-            <span>
-                <input type="text" id="new-class" placeholder="New class" class="form-control" {{create_disabled}}/>
-            </span>
-        </div>
-    {{/if}}
+    {{#each classes}}
+        {{#if editing}}
+            <div class="edit list-group-item">
+                <input class="class-name-input form-control" id="class-name-input" type="text" value="{{name}}" />
+            </div>
+        {{else}}
+            <a class="class list-group-item {{active}}" href="/{{_id}}">
+                {{name}}
+            </a>
+        {{/if}}
+    {{/each}}
+    <div id="createList" class="nav-header list-group-item">
+        <span>
+            <input type="text" id="new-class" placeholder="New class" class="form-control" {{create_disabled}}/>
+        </span>
+    </div>
 </template>
 
 <template name="assignments">
-    {{#if any_class_selected}}
-        <div id="items-view" class="container-fluid">
-            {{#if loading}}
-                <i class="fa fa-spinner fa-spin"></i> Loading...
-            {{else}}
-                <div class="list-group">
-                    {{> new_assignment_box}}
-                    {{#each assignments}}
-                        {{> assignment_item}}
-                    {{/each}}
-                </div>
-            {{/if}}
+    <div id="items-view" class="container-fluid">
+        <div class="list-group">
+            {{> new_assignment_box}}
+            {{#each assignments}}
+                {{> assignment_item}}
+            {{/each}}
         </div>
-    {{/if}}
+    </div>
 </template>
 
 <template name="new_assignment_box">
@@ -104,24 +91,23 @@
             <div class="col-sm-9 edit">
                 <input class="form-control input-sm" id="assignment-input" type="text" value="{{text}}" />
             </div>
+            <div class="item-details col-sm-3 text-right">
+                <div class="input-group">
+                    <span class="input-group-addon">Due</span>
+                    <input id="due-date-input" type="text" value="{{editable_due_date}}" class="form-control input-sm" />
+                </div>
+            </div>
         {{else}}
             <div class="col-sm-9">
                 <i class="fa fa-{{done_checkbox}}square-o fa-fw fa-lg check pull-left visible-xs"></i>
                 <i class="fa fa-{{done_checkbox}}square-o fa-fw check hidden-xs"></i>
                 <span class="assignment-text">{{text}}</span>
             </div>
-        {{/if}}
-        <div class="item-details col-sm-3 text-right">
-            {{#if editing_due_date}}
-                <div class="input-group">
-                    <span class="input-group-addon">Due</span>
-                    <input id="due-date-input" type="text" value="{{editable_due_date}}" class="form-control input-sm" />
-                </div>
-            {{else}}
+            <div class="item-details col-sm-3 text-right">
                 Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>
                 <i class="destroy fa fa-trash-o hidden-xs fa-fw"></i>
                 <i class="destroy fa fa-trash-o visible-xs fa-fw fa-lg pull-right"></i>
-            {{/if}}
-        </div>
+            </div>
+        {{/if}}
     </div>
 </template>

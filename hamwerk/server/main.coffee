@@ -33,15 +33,11 @@ Assignments.allow
 Assignments.deny
     update: (userId, doc, fieldNames) -> fieldNames.indexOf("class_id") isnt -1
 
-# Publish all items for requested class_id.
-Meteor.publish 'assignments', (class_id) ->
-    check(class_id, String)
+# Publish all items for that user
+Meteor.publish 'assignments', ->
     throw new Meteor.Error(401, "Not logged in") unless @userId?
-    if class_id is ""
-        return Assignments.find({class_id: $in: _.pluck(Classes.find({user: @userId}, {fields: _id: 1}).fetch(), "_id")})
-    if Classes.findOne(class_id)?.user isnt @userId
-        throw new Meteor.Error(403, "This class doesn't belong to you")
-    return Assignments.find(class_id: class_id)
+    userClasses = Classes.find({user: @userId}, {fields: {_id: 1}}).fetch()
+    return Assignments.find({class_id: $in: _.pluck(userClasses, "_id")})
 
 Meteor.methods
     nukeClass: (class_id) ->

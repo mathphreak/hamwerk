@@ -7,7 +7,7 @@
 @online = -> Meteor.status().status is "connected"
 
 # ID of currently selected class
-Session.setDefault "class_id", null
+Session.setDefault "class_id", ""
 
 # When editing a class name, ID of the class
 Session.setDefault "editing_classname", null
@@ -20,18 +20,12 @@ Session.setDefault "editing_itemname", null
 classesHandle = Meteor.subscribe "classes", -> Router?.setList ""
 
 Meteor.setTimeout (-> Router?.setList("")), 20
+Meteor.setInterval Offline.save, 1000
 
 assignmentsHandle = null
 # Always be subscribed to the assignments for the selected class.
 Deps.autorun ->
-    class_id = Session.get "class_id"
-    if class_id
-        assignmentsHandle = Meteor.subscribe("assignments", class_id)
-    else if class_id is ""
-        assignmentsHandle = Meteor.subscribe("assignments", "")
-        Offline.save()
-    else
-        assignmentsHandle = null
+    assignmentsHandle = Meteor.subscribe("assignments")
 
 Deps.autorun ->
     if !Meteor.userId()?
@@ -74,8 +68,6 @@ Template.contents.showEverything = ->
 
 # Classes #
 
-Template.classes.loading = -> !classesHandle.ready() and online()
-
 Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name: 1
 
 Template.classes.fake_all_class_list = -> [_id: ""]
@@ -94,7 +86,8 @@ Template.classes.events
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
     ok: (text, evt) ->
-        id = Offline.smart.classes().insert name: text, user: Meteor.userId()
+        id = Offline.smart.classes().insert {name: text, user: Meteor.userId()}, ->
+            assignmentsHandle = Meteor.subscribe("assignments")
         evt.target.value = ""
 
 Template.classes.events okCancelEvents "#class-name-input",
@@ -102,13 +95,16 @@ Template.classes.events okCancelEvents "#class-name-input",
         if value isnt ""
             Offline.smart.classes().update this._id, $set: name: value
         else
-            Meteor.call "nukeClass", this._id, -> Session.set "class_id", ""
+            Meteor.call "nukeClass", this._id, -> Router?.setList ""
         Session.set "editing_classname", null
     cancel: ->
         Session.set "editing_classname", null
 
 Template.classes.active = ->
-    if Session.equals("class_id", this._id) then "active" else ""
+    if Session.equals("class_id", this._id)
+        "active"
+    else
+        ""
 
 Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
@@ -124,10 +120,6 @@ Template.new_assignment_box.sample = ->
         "#{task}"
 
 # Assignments #
-
-Template.assignments.loading = -> online() && (assignmentsHandle && !assignmentsHandle.ready())
-
-Template.assignments.any_class_selected = -> !Session.equals("class_id", null)
 
 Template.assignments.events okCancelEvents "#new-assignment",
     ok: (text, evt) ->
@@ -193,9 +185,7 @@ Template.assignments.events okCancelEvents "#new-assignment",
 Template.assignments.assignments = ->
     # Determine which assignments to display in main pane,
     # selected based on class_id and tag_filter.
-
     class_id = Session.get "class_id"
-    return {} unless class_id?
 
     sel = class_id: class_id
     if class_id is ""
