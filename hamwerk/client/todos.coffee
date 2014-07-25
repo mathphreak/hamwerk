@@ -17,12 +17,14 @@ Session.setDefault "editing_itemname", null
 
 # Subscribe to "classes" collection on startup.
 # Select a class once data has arrived.
-classesHandle = Meteor.subscribe "classes", -> Router?.setList ""
+classesHandle = Meteor.subscribe "classes", ->
+    Router?.setList ""
+    Offline.save()
 
 Meteor.setTimeout (-> Router?.setList("")), 20
-Meteor.setInterval Offline.save, 250
 
-Meteor.subscribe("assignments")
+Meteor.subscribe "assignments", ->
+    Offline.save()
 
 Deps.autorun ->
     if !Meteor.userId()?
@@ -31,7 +33,9 @@ Deps.autorun ->
 Deps.autorun ->
     if Meteor.user()?.profile?
         if not Meteor.user().profile.onboarded
-            Meteor.call "onboardMe", new Date().getTimezoneOffset(), -> Meteor.subscribe "assignments"
+            Meteor.call "onboardMe", new Date().getTimezoneOffset(), ->
+                Meteor.subscribe "assignments"
+                Offline.save()
 
 # Helpers for in-place editing #
 
@@ -91,15 +95,20 @@ Template.classes.events okCancelEvents "#new-class",
         if text is "Hamwerk 101"
             Meteor.users.update(Meteor.userId(), {$set: {profile: {onboarded: false}}})
         else
-            id = Offline.smart.classes().insert {name: text, user: Meteor.userId()}, -> Meteor.subscribe("assignments")
+            id = Offline.smart.classes().insert {name: text, user: Meteor.userId()}, ->
+                Meteor.subscribe("assignments")
+                Offline.save()
         evt.target.value = ""
 
 Template.classes.events okCancelEvents "#class-name-input",
     ok: (value) ->
         if value isnt ""
-            Offline.smart.classes().update this._id, $set: name: value
+            Offline.smart.classes().update this._id, {$set: name: value}, ->
+                Offline.save()
         else
-            Meteor.call "nukeClass", this._id, -> Router?.setList ""
+            Meteor.call "nukeClass", this._id, ->
+                Router?.setList ""
+                Offline.save()
         Session.set "editing_classname", null
     cancel: ->
         Session.set "editing_classname", null
@@ -158,7 +167,8 @@ Template.assignments.events okCancelEvents "#new-assignment",
             if parsedDate isnt null
                 newAssignment.text = dueDateMatch[1]
                 newAssignment.due = parsedDate
-        Offline.smart.assignments().insert newAssignment
+        Offline.smart.assignments().insert newAssignment, ->
+            Offline.save()
         evt.target.value = ""
     dirty: (text, evt) ->
         $("#new-assignment").parent().removeClass("has-error")
@@ -236,10 +246,12 @@ Template.assignment_item.color_class = ->
 
 Template.assignment_item.events
     "click .check": ->
-        Offline.smart.assignments().update this._id, $set: done: !this.done
+        Offline.smart.assignments().update this._id, {$set: done: !this.done}, ->
+            Offline.save()
 
     "click .destroy": ->
-        Offline.smart.assignments().remove(this._id)
+        Offline.smart.assignments().remove this._id, ->
+            Offline.save()
 
     "dblclick .assignment-text": (evt, tmpl) ->
         Session.set "editing_itemname", this._id
@@ -253,13 +265,15 @@ Template.assignment_item.events
 
 Template.assignment_item.events okCancelEvents "#assignment-input",
     ok: (value) ->
-        Offline.smart.assignments().update this._id, $set: text: value
+        Offline.smart.assignments().update this._id, {$set: text: value}, ->
+            Offline.save()
         Session.set "editing_itemname", null
     cancel: -> Session.set "editing_itemname", null
 
 Template.assignment_item.events okCancelEvents "#due-date-input",
     ok: (value) ->
-        Offline.smart.assignments().update this._id, $set: due: DateOMatic.destringify(value)
+        Offline.smart.assignments().update this._id, {$set: due: DateOMatic.destringify(value)}, ->
+            Offline.save()
         Session.set "editing_itemname", null
     cancel: -> Session.set "editing_itemname", null
 
