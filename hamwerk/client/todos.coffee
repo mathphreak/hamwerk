@@ -159,7 +159,6 @@ Template.assignments.events okCancelEvents "#new-assignment",
                 newAssignment.text = dueDateMatch[1]
                 newAssignment.due = parsedDate
         Offline.smart.assignments().insert newAssignment
-        Offline.save()
         evt.target.value = ""
     dirty: (text, evt) ->
         $("#new-assignment").parent().removeClass("has-error")
@@ -223,8 +222,6 @@ Template.assignment_item.done_checkbox = -> if this.done then "check-" else ""
 
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
 
-Template.assignment_item.editing_due_date = -> Session.equals("editing_due_date", @_id)
-
 Template.assignment_item.color_class = ->
     if @done
         return "list-group-item-success"
@@ -240,11 +237,9 @@ Template.assignment_item.color_class = ->
 Template.assignment_item.events
     "click .check": ->
         Offline.smart.assignments().update this._id, $set: done: !this.done
-        Offline.save()
 
     "click .destroy": ->
         Offline.smart.assignments().remove(this._id)
-        Offline.save()
 
     "dblclick .assignment-text": (evt, tmpl) ->
         Session.set "editing_itemname", this._id
@@ -252,7 +247,7 @@ Template.assignment_item.events
         activateInput(tmpl.find("#assignment-input"))
 
     "dblclick abbr": (evt, tmpl) ->
-        Session.set "editing_due_date", @_id
+        Session.set "editing_itemname", @_id
         Deps.flush()
         activateInput(tmpl.find("#due-date-input"))
 
@@ -260,15 +255,13 @@ Template.assignment_item.events okCancelEvents "#assignment-input",
     ok: (value) ->
         Offline.smart.assignments().update this._id, $set: text: value
         Session.set "editing_itemname", null
-        Offline.save()
     cancel: -> Session.set "editing_itemname", null
 
 Template.assignment_item.events okCancelEvents "#due-date-input",
     ok: (value) ->
         Offline.smart.assignments().update this._id, $set: due: DateOMatic.destringify(value)
-        Session.set "editing_due_date", null
-        Offline.save()
-    cancel: -> Session.set "editing_due_date", null
+        Session.set "editing_itemname", null
+    cancel: -> Session.set "editing_itemname", null
 
 # Tracking selected class in URL #
 
