@@ -5,7 +5,7 @@ if [ ! -d /home/vagrant/hamwerk ]; then
     su vagrant -c 'curl https://install.meteor.com | sh'
     su vagrant -c 'meteor create hamwerk'
     cd hamwerk
-    su vagrant -c 'meteor add coffeescript less jquery backbone accounts-password accounts-ui appcache amplify'
+    su vagrant -c 'meteor add coffeescript less jquery backbone accounts-password accounts-ui appcache amplify showdown'
     su vagrant -c 'meteor remove autopublish insecure'
     cd /vagrant/hamwerk
     rm -vrf .meteor
