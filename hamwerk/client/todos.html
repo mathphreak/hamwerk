@@ -88,13 +88,21 @@
 <template name="assignment_item">
     <div class="assignment {{done_class}} list-group-item row {{color_class}}">
         {{#if editing}}
-            <div class="col-sm-9 edit">
-                <input class="form-control input-sm" id="assignment-input" type="text" value="{{text}}" />
+            <div class="col-sm-9">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-btn">
+                        <button class="btn btn-warning cancel"><i class="fa fa-ban"></i></button>
+                    </span>
+                    <input class="form-control" id="assignment-input" type="text" value="{{text}}" />
+                </div>
             </div>
             <div class="item-details col-sm-3 text-right">
-                <div class="input-group">
+                <div class="input-group input-group-sm">
                     <span class="input-group-addon">Due</span>
-                    <input id="due-date-input" type="text" value="{{editable_due_date}}" class="form-control input-sm" />
+                    <input id="due-date-input" type="text" value="{{editable_due_date}}" class="form-control" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-danger destroy"><i class="fa fa-trash-o"></i></button>
+                    </span>
                 </div>
             </div>
         {{else}}
@@ -105,8 +113,8 @@
             </div>
             <div class="item-details col-sm-3 text-right">
                 Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>
-                <i class="destroy fa fa-trash-o hidden-xs fa-fw"></i>
-                <i class="destroy fa fa-trash-o visible-xs fa-fw fa-lg pull-right"></i>
+                <i class="edit fa fa-pencil hidden-xs fa-fw"></i>
+                <i class="edit fa fa-pencil visible-xs fa-fw fa-lg pull-right"></i>
             </div>
         {{/if}}
     </div>

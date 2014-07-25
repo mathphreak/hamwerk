@@ -46,6 +46,7 @@ okCancelEvents = (selector, callbacks) ->
     ok = callbacks.ok || ->
     cancel = callbacks.cancel || ->
     dirty = callbacks.dirty || ->
+    blur = callbacks.blur || ->
 
     events = {}
     events["keyup #{selector}, keydown #{selector}, focusout #{selector}"] =
@@ -53,6 +54,7 @@ okCancelEvents = (selector, callbacks) ->
             if evt.type is "keydown" and evt.which is 27
                 # escape = cancel
                 cancel.call(this, evt)
+                blur.call(this, evt)
             else if evt.type is "keyup"
                 if evt.which is 13
                     # return/enter = ok/submit if non-empty
@@ -61,6 +63,8 @@ okCancelEvents = (selector, callbacks) ->
                 else
                     value = String(evt.target.value || "")
                     dirty.call(this, value, evt)
+            else if evt.type is "focusout"
+                blur.call(this, evt)
     return events
 
 activateInput = (input) ->
@@ -249,9 +253,17 @@ Template.assignment_item.events
         Offline.smart.assignments().update this._id, {$set: done: !this.done}, ->
             Offline.save()
 
+    "click .edit": (evt, tmpl) ->
+        Session.set "editing_itemname", this._id
+        Deps.flush() # update DOM before focus
+        activateInput(tmpl.find("#assignment-input"))
+
     "click .destroy": ->
         Offline.smart.assignments().remove this._id, ->
             Offline.save()
+
+    "click .cancel": ->
+        Session.set "editing_itemname", null
 
     "dblclick .assignment-text": (evt, tmpl) ->
         Session.set "editing_itemname", this._id
