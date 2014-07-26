@@ -15,6 +15,10 @@ Session.setDefault "editing_classname", null
 # When editing assignment text, ID of the assignment
 Session.setDefault "editing_itemname", null
 
+# Forcing assignments to re-render every so often
+Session.setDefault "assignment_interval", Date.now()
+Meteor.setInterval (-> Session.set "assignment_interval", Date.now()), 500
+
 # Subscribe to "classes" collection on startup.
 # Select a class once data has arrived.
 classesHandle = Meteor.subscribe "classes", ->
@@ -200,6 +204,9 @@ Template.assignments.events okCancelEvents "#new-assignment",
                 return
 
 Template.assignments.assignments = ->
+    # Fake dependency on assignment_interval to update periodically.
+    Meteor.extra_garbage_of_tomfoolery = Session.get "assignment_interval"
+
     # Determine which assignments to display in main pane,
     # selected based on class_id and tag_filter.
     class_id = Session.get "class_id"

@@ -51,7 +51,6 @@ Meteor.methods
     onboardMe: (clientOffset) ->
         serverOffset = new Date().getTimezoneOffset()
         minutesToAdd = clientOffset - serverOffset
-        console.log "Client is #{clientOffset} minutes from UTC; server is #{serverOffset}; adding #{minutesToAdd} to compensate"
         assignments = [
             ["Check off this assignment as complete by pressing the white box to its left", "today"]
             ["Edit this assignment by pressing the pencil, changing the text and/or due date, and pressing Enter", "tomorrow"]
