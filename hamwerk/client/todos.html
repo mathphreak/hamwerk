@@ -14,6 +14,7 @@
     {{> contents}}
 
     {{> about_modal}}
+    {{> syntax_modal}}
 </body>
 
 <template name="contents">
@@ -80,7 +81,12 @@
 <template name="new_assignment_box">
     <div class="list-group-item row">
         <span class="form-group">
-            <input type="text" id="new-assignment" placeholder="e.g. {{sample}}" class="form-control" {{disabled}}/>
+            <span class="input-group">
+                <input type="text" id="new-assignment" placeholder="e.g. {{sample}}" class="form-control" {{disabled}}/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" data-toggle="modal" data-target="#syntax"><i class="fa fa-question-circle"></i></button>
+                </span>
+            </span>
         </span>
     </div>
 </template>
@@ -130,6 +136,25 @@
                 </div>
                 <div class="modal-body">
                     {{> about_body}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="syntax_modal">
+    <div class="modal fade" id="syntax" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Assignment Syntax</h4>
+                </div>
+                <div class="modal-body">
+                    {{> syntax_body}}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
