@@ -92,10 +92,13 @@ Template.new_assignment_box.disabled = -> if online() then "" else "disabled"
 Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
     "click .class": (evt) -> evt.preventDefault()
-    "dblclick .class": (evt, tmpl) -> # start editing class name
+    "click .edit": (evt) ->
         Session.set "editing_classname", this._id
-        Deps.flush() # force DOM redraw, so we can focus the edit field
-        activateInput(tmpl.find("#class-name-input"))
+    "click .destroy": (evt) ->
+        Meteor.call "nukeClass", @_id, ->
+            Session.set "editing_classname", null
+            Router?.setList ""
+            Offline.save()
 
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
@@ -112,10 +115,6 @@ Template.classes.events okCancelEvents "#class-name-input",
     ok: (value) ->
         if value isnt ""
             Offline.smart.classes().update this._id, {$set: name: value}, ->
-                Offline.save()
-        else
-            Meteor.call "nukeClass", this._id, ->
-                Router?.setList ""
                 Offline.save()
         Session.set "editing_classname", null
     cancel: ->

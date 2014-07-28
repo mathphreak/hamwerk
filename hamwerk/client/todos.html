@@ -51,12 +51,20 @@
     {{/each}}
     {{#each classes}}
         {{#if editing}}
-            <div class="edit list-group-item">
-                <input class="class-name-input form-control" id="class-name-input" type="text" value="{{name}}" />
+            <div class="edit list-group-item {{active}}">
+                <div class="input-group">
+                    <input class="class-name-input form-control" id="class-name-input" type="text" value="{{name}}" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-danger destroy"><i class="fa fa-trash-o"></i></button>
+                    </span>
+                </div>
             </div>
         {{else}}
             <a class="class list-group-item {{active}}" href="/{{_id}}">
                 {{name}}
+                <span class="pull-right edit">
+                    <i class="fa fa-pencil"></i>
+                </span>
             </a>
         {{/if}}
     {{/each}}
