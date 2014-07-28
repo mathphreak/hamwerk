@@ -4,13 +4,13 @@
 
     loadCache = ->
         do =>
-            loadedClassList = amplify.store "classes"
+            loadedClassList = amplify.store("classes") || []
             cachedClassList = new Meteor.Collection null
             for clasz in loadedClassList
                 cachedClassList.insert clasz
 
         do =>
-            loadedAssignmentsList = amplify.store "assignments"
+            loadedAssignmentsList = amplify.store("assignments") || []
             cachedAssignmentsList = new Meteor.Collection null
             for assignment in loadedAssignmentsList
                 cachedAssignmentsList.insert assignment
