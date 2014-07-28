@@ -131,10 +131,19 @@ Template.classes.editing = -> Session.equals("editing_classname", this._id)
 
 # New Assignment Box #
 
-rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
-
 Template.new_assignment_box.sample = ->
-    task = "read chapter #{rand(1, 15)} due #{DateOMatic.getDowName(rand(0, 6))}"
+    rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
+
+    types = [
+        -> "today"
+        -> "tomorrow"
+        -> "#{DateOMatic.getMonthName(rand(0, 11))} #{rand(1, 28)}"
+        -> "#{DateOMatic.getMonthName(rand(0, 11))} #{rand(1, 28)}, #{new Date().getFullYear()+1}"
+        -> "#{DateOMatic.getDowName(rand(0, 6))}"
+        -> "#{DateOMatic.getDowName(rand(0, 6)).slice(0, 3)}"
+        -> "#{rand(1, 10)} days from now"
+    ]
+    task = "read chapter #{rand(1, 15)} due #{_.sample(types)()}"
     if Session.equals("class_id", "")
         "#{_(Offline.smart.classes().find().fetch()).chain().pluck('name').shuffle().value()[0]} #{task}"
     else

@@ -38,6 +38,8 @@ pluralify = (rawAmount, singular) ->
 
     getDowName: (dow) -> dowNames[dow]
 
+    getMonthName: (month) -> monthNames[month]
+
     msDifferential: (later) -> new Date(later).getTime() - (new Date()).getTime()
 
     isFuture: (later) -> @msDifferential(later) > 0
