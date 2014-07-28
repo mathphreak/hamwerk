@@ -174,13 +174,12 @@ Template.assignments.events okCancelEvents "#new-assignment",
             class_id: class_id
             done: false
             timestamp: (new Date()).getTime()
-        text = text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase()
-        dueDateMatch = /(.+) (?:due|do|for) (.+)/.exec text
+        dueDateMatch = /(.+) due (.+)/i.exec text
         parsedDate = DateOMatic.parseFuzzyFutureDate("tomorrow")
         newAssignment.text = text
         newAssignment.due = parsedDate
         if dueDateMatch?
-            parsedDate = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
+            parsedDate = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2].toLowerCase())
             if parsedDate isnt null
                 newAssignment.text = dueDateMatch[1]
                 newAssignment.due = parsedDate
@@ -204,7 +203,7 @@ Template.assignments.events okCancelEvents "#new-assignment",
             else
                 $("#new-assignment").parent().addClass("has-error")
                 return
-        dueDateMatch = /(.+) (?:due|do|for) (.+)/.exec text
+        dueDateMatch = /(.+) due (.+)/.exec text
         if dueDateMatch?
             parsedDate = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2])
             if parsedDate is null

@@ -1,5 +1,26 @@
 <template name="syntax_body">
 {{#markdown}}
-Here's how you do this stuff.
+If you're in the "All Classes" view, you'll need to enter a class name before the assignment.  If you're looking at a
+specific class, you don't need to do this.
+
+The assignment itself can be anything.  If the assignment needs to have the word "due" in it, Hamwerk can't guess
+the due date, so you need to make sure that you specify the due date if the assignment contains "due".
 {{/markdown}}
+<ul class="fa-ul">
+    <li class="text-danger"><i class="fa fa-li fa-ban"></i>find out due date of essay</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>find out due date of essay due Friday</li>
+</ul>
+{{#markdown}}
+Due dates can be specified in many different ways:
+{{/markdown}}
+<ul class="fa-ul">
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due today</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due tomorrow</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due April 3</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due April 3rd</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due April 3, 2015</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due Friday</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due Fri</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due 3 days from now</li>
+</ul>
 </template>
