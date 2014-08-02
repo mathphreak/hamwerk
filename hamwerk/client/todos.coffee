@@ -88,6 +88,7 @@ Template.classes.fake_all_class_list = -> [_id: ""]
 
 Template.classes.create_disabled = -> if online() then "" else "disabled"
 Template.new_assignment_box.disabled = -> if online() then "" else "disabled"
+Template.classes.class_color = -> @color
 
 Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
@@ -106,7 +107,7 @@ Template.classes.events okCancelEvents "#new-class",
         if text is "Hamwerk 101"
             Meteor.users.update(Meteor.userId(), {$set: {profile: {onboarded: false}}})
         else
-            id = Offline.smart.classes().insert {name: text, user: Meteor.userId()}, ->
+            id = Offline.smart.classes().insert {name: text, user: Meteor.userId(), color: "black"}, ->
                 Meteor.subscribe("assignments")
                 Offline.save()
         evt.target.value = ""
@@ -198,7 +199,6 @@ Template.assignments.events okCancelEvents "#new-assignment",
                 if text.trim() is ""
                     $("#new-assignment").parent().addClass("has-error")
                     return
-                class_id = guessedClass._id
             else
                 $("#new-assignment").parent().addClass("has-error")
                 return
@@ -249,6 +249,9 @@ Template.assignment_item.done_class = -> if this.done then "muted" else ""
 Template.assignment_item.done_checkbox = -> if this.done then "check-" else ""
 
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
+
+Template.assignment_item.class_color = ->
+    Offline.smart.classes().findOne(@class_id).color
 
 Template.assignment_item.color_class = ->
     if @done

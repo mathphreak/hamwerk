@@ -61,6 +61,7 @@
             </div>
         {{else}}
             <a class="class list-group-item {{active}}" href="/{{_id}}">
+                <i class="fa fa-circle hidden-xs" style="color: {{class_color}};"></i>
                 {{name}}
                 <span class="pull-right edit">
                     <i class="fa fa-pencil"></i>
@@ -123,6 +124,7 @@
             <div class="col-sm-9">
                 <i class="fa fa-{{done_checkbox}}square-o fa-fw fa-lg check pull-left visible-xs"></i>
                 <i class="fa fa-{{done_checkbox}}square-o fa-fw check hidden-xs"></i>
+                <i class="fa fa-circle hidden-xs" style="color: {{class_color}};"></i>
                 <span class="assignment-text">{{text}}</span>
             </div>
             <div class="item-details col-sm-3 text-right">

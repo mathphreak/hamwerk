@@ -1,4 +1,6 @@
-# Classes -- {name: String, user: String}
+# Classes -- name: String
+#            user: String
+#            color: String
 @Classes = new Meteor.Collection "classes"
 
 Classes.allow
@@ -15,11 +17,11 @@ Classes.deny
 Meteor.publish 'classes', -> Classes.find({user: @userId})
 
 
-# Assignments -- {text: String,
-#                 done: Boolean,
-#                 due: Date,
-#                 class_id: String,
-#                 timestamp: Number}
+# Assignments -- text: String
+#                done: Boolean
+#                due: Date
+#                class_id: String
+#                timestamp: Number
 @Assignments = new Meteor.Collection "assignments"
 
 classMatches = (class_id, userId) -> Classes.findOne(class_id)?.user is userId
