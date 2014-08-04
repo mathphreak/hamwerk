@@ -15,6 +15,7 @@
 
     {{> about_modal}}
     {{> syntax_modal}}
+    {{> edit_class_modal}}
 </body>
 
 <template name="contents">
@@ -52,18 +53,28 @@
     {{#each classes}}
         {{#if editing}}
             <div class="edit list-group-item {{active}}">
-                <div class="input-group">
-                    <input class="class-name-input form-control" id="class-name-input" type="text" value="{{name}}" />
-                    <span class="input-group-btn">
-                        <button class="btn btn-danger destroy"><i class="fa fa-trash-o"></i></button>
-                    </span>
+                <div class="form-group">
+                    <div class="input-group">
+                        <input class="class-name-input form-control" id="class-name-input" type="text" value="{{name}}" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger destroy"><i class="fa fa-trash-o"></i></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <input class="class-color-input form-control" id="class-color-input" type="text" value="{{class_color}}" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" data-toggle="modal" data-target="#color"><i class="fa fa-question-circle"></i></button>
+                        </span>
+                    </div>
                 </div>
             </div>
         {{else}}
             <a class="class list-group-item {{active}}" href="/{{_id}}" style="border-left: 5px solid {{class_color}};">
                 {{name}}
                 <span class="pull-right edit">
-                    <i class="fa fa-pencil"></i>
+                    <button class="btn btn-default" data-toggle="modal" data-target="#edit-class"><i class="fa fa-pencil"></i></button>
                 </span>
             </a>
         {{/if}}
@@ -160,6 +171,25 @@
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     <h4 class="modal-title" id="myModalLabel">Assignment Syntax</h4>
+                </div>
+                <div class="modal-body">
+                    {{> syntax_body}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="edit_class_modal">
+    <div class="modal fade" id="edit-class" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Edit Class</h4>
                 </div>
                 <div class="modal-body">
                     {{> syntax_body}}

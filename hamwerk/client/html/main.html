@@ -1,0 +1,46 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <title>Hamwerk</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            {{> navbar}}
+        </div>
+    </div>
+
+    {{> contents}}
+
+    {{> help_modals}}
+    {{> edit_class_modal}}
+</body>
+
+<template name="contents">
+    {{#if showEverything}}
+        <div class="container-fluid">
+            <div class="row">
+                <div id="side-pane" class="col-sm-3">
+                    <div class="list-group">
+                        {{> classes}}
+                    </div>
+                </div>
+
+                <div id="main-pane" class="col-sm-9">
+                    {{> assignments}}
+                </div>
+            </div>
+        </div>
+    {{else}}
+        {{> landing_page}}
+    {{/if}}
+</template>
+
+<template name="navbar">
+    <div class="navbar-header">
+        <span class="navbar-brand">Hamwerk <a href="#" data-toggle="modal" data-target="#about"><i class="fa fa-info-circle"></i></a></span>
+        <!-- yes, the "About" link *should* be in a navbar-nav, but that was folding on narrow viewports, which I'm too lazy to fix -->
+    </div>
+    <div class="pull-right navbar-text">{{> loginButtons align="right"}}</div>
+</template>

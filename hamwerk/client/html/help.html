@@ -1,0 +1,99 @@
+<template name="help-modals">
+    {{> about_modal}}
+    {{> syntax_modal}}
+</template>
+
+<template name="about_modal">
+    <div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">About Hamwerk</h4>
+                </div>
+                <div class="modal-body">
+                    {{> about_body}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="syntax_modal">
+    <div class="modal fade" id="syntax" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Assignment Syntax</h4>
+                </div>
+                <div class="modal-body">
+                    {{> syntax_body}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="about_body">
+{{#markdown}}
+Hamwerk was made with love and frustration by [Matt Horn](http://mathphreak.github.io/) and is released
+under the [MIT License](https://github.com/mathphreak/hamwerk/blob/master/LICENSE.txt).
+
+If something isn't working, or you have an idea for a cool new feature, submit it
+[here](https://github.com/mathphreak/hamwerk/issues).
+
+It uses the excellent [Meteor](http://meteor.com/) framework, along with
+[Bootstrap 3](http://getbootstrap.com/), [Font Awesome](http://fortawesome.github.io/Font-Awesome/),
+and a host of other libraries:
+
+* [CoffeeScript](http://coffeescript.org/)
+* [Less](http://lesscss.org/)
+* [jQuery](http://jquery.com/)
+* [Backbone](http://backbonejs.org/)
+* [Underscore](http://underscorejs.org/)
+* [Amplify](http://amplifyjs.com/)
+
+I made it with the following tools:
+
+* [Vagrant](http://www.vagrantup.com/) because Meteor worked really badly on Windows when I first started
+* [Atom](http://atom.io/) because it's the best text editor I've used
+* [GitHub for Windows](https://windows.github.com/) because it's the best Git GUI for GitHub repositories
+
+If you're curious, the entire source code for Hamwerk is available on
+[<i class="fa fa-github fa-2x"></i> GitHub](https://github.com/mathphreak/hamwerk).
+{{/markdown}}
+</template>
+
+<template name="syntax_body">
+{{#markdown}}
+If you're in the "All Classes" view, you'll need to enter a class name before the assignment.  If you're looking at a
+specific class, you don't need to do this.
+
+The assignment itself can be anything.  If the assignment needs to have the word "due" in it, Hamwerk can't guess
+the due date, so you need to make sure that you specify the due date if the assignment contains "due".
+{{/markdown}}
+<ul class="fa-ul">
+    <li class="text-danger"><i class="fa fa-li fa-ban"></i>find out due date of essay</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>find out due date of essay due Friday</li>
+</ul>
+{{#markdown}}
+Due dates can be specified in many different ways:
+{{/markdown}}
+<ul class="fa-ul">
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due today</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due tomorrow</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due April 3</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due April 3rd</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due April 3, 2015</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due Friday</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due Fri</li>
+    <li class="text-success"><i class="fa fa-li fa-check"></i>read chapter 5 due 3 days from now</li>
+</ul>
+</template>
