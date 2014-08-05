@@ -1,0 +1,58 @@
+<template name="assignments">
+    <div id="items-view" class="container-fluid">
+        <div class="list-group">
+            {{> new_assignment_box}}
+            {{#each assignments}}
+                {{> assignment_item}}
+            {{/each}}
+        </div>
+    </div>
+</template>
+
+<template name="new_assignment_box">
+    <div class="list-group-item row">
+        <span class="form-group">
+            <span class="input-group">
+                <input type="text" id="new-assignment" placeholder="e.g. {{sample}}" class="form-control" {{disabled}}/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" data-toggle="modal" data-target="#syntax"><i class="fa fa-question-circle"></i></button>
+                </span>
+            </span>
+        </span>
+    </div>
+</template>
+
+<template name="assignment_item">
+    <div class="assignment {{done_class}} list-group-item row {{color_class}}" style="border-left: 5px solid {{class_color}};">
+        {{#if editing}}
+            <div class="col-sm-9">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-btn">
+                        <button class="btn btn-warning cancel"><i class="fa fa-ban"></i></button>
+                    </span>
+                    <input class="form-control" id="assignment-input" type="text" value="{{text}}" />
+                </div>
+            </div>
+            <div class="item-details col-sm-3 text-right">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Due</span>
+                    <input id="due-date-input" type="text" value="{{editable_due_date}}" class="form-control" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-danger destroy"><i class="fa fa-trash-o"></i></button>
+                    </span>
+                </div>
+            </div>
+        {{else}}
+            <div class="col-sm-9">
+                <i class="fa fa-{{done_checkbox}}square-o fa-fw fa-lg check pull-left visible-xs"></i>
+                <i class="fa fa-{{done_checkbox}}square-o fa-fw check hidden-xs"></i>
+                <span class="assignment-text">{{text}}</span>
+            </div>
+            <div class="item-details col-sm-3 text-right">
+                Due <abbr title="{{precise_due_date}}">{{fuzzy_due_date}}</abbr>
+                <i class="edit fa fa-pencil hidden-xs fa-fw"></i>
+                <i class="edit fa fa-pencil visible-xs fa-fw fa-lg pull-right"></i>
+            </div>
+        {{/if}}
+    </div>
+</template>
