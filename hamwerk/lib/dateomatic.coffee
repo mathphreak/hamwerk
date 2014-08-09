@@ -87,6 +87,7 @@ pluralify = (rawAmount, singular) ->
         absoluteDateMatches = /^(\w+,?\s)?\w+ \d+,? \d+$/.test(dateString)
         inNDaysMatch = /^(\d+) days from now/i.exec(dateString)
         trimmedDowNames = dowNames.map((name) -> name.slice(0, 3))
+        trimmedMonthNames = monthNames.map((name) -> name.slice(0, 3))
         if dateString is "Today"
             # do nothing
         else if dateString is "Tomorrow"
@@ -102,7 +103,10 @@ pluralify = (rawAmount, singular) ->
         else if monthDayMatch?
             month = monthDayMatch[1]
             day = monthDayMatch[2]
-            result.setMonth(monthNames.indexOf(month))
+            monthNum = monthNames.indexOf(month)
+            if monthNum is -1
+                monthNum = trimmedMonthNames.indexOf(month)
+            result.setMonth(monthNum)
             result.setDate(parseInt(day))
             while !@isFuture(result)
                 result.setFullYear(result.getFullYear() + 1)
