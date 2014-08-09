@@ -10,7 +10,7 @@
 Session.setDefault "class_id", ""
 
 # When editing a class name, ID of the class
-Session.setDefault "editing_classname", null
+Session.setDefault "editing_class", null
 
 # When editing assignment text, ID of the assignment
 Session.setDefault "editing_itemname", null
@@ -86,7 +86,8 @@ Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name
 
 Template.classes.fake_all_class_list = -> [_id: ""]
 
-Template.classes.create_disabled = -> if online() then "" else "disabled"
+Template.classes.edit_disabled = -> if online() then "" else "disabled"
+Template.classes.show_edit = -> online()
 Template.new_assignment_box.disabled = -> if online() then "" else "disabled"
 Template.classes.class_color = -> @color
 
@@ -94,12 +95,7 @@ Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
     "click .class": (evt) -> evt.preventDefault()
     "click .edit": (evt) ->
-        Session.set "editing_classname", this._id
-    "click .destroy": (evt) ->
-        Meteor.call "nukeClass", @_id, ->
-            Session.set "editing_classname", null
-            Router?.setList ""
-            Offline.save()
+        Session.set "editing_class", this._id
 
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
@@ -107,19 +103,10 @@ Template.classes.events okCancelEvents "#new-class",
         if text is "Hamwerk 101"
             Meteor.users.update(Meteor.userId(), {$set: {profile: {onboarded: false}}})
         else
-            id = Offline.smart.classes().insert {name: text, user: Meteor.userId(), color: "black"}, ->
+            id = Offline.smart.classes().insert {name: text, user: Meteor.userId(), color: Please.make_color()}, ->
                 Meteor.subscribe("assignments")
                 Offline.save()
         evt.target.value = ""
-
-Template.classes.events okCancelEvents "#class-name-input",
-    ok: (value) ->
-        if value isnt ""
-            Offline.smart.classes().update this._id, {$set: name: value}, ->
-                Offline.save()
-        Session.set "editing_classname", null
-    cancel: ->
-        Session.set "editing_classname", null
 
 Template.classes.active = ->
     if Session.equals("class_id", this._id)
@@ -127,7 +114,34 @@ Template.classes.active = ->
     else
         ""
 
-Template.classes.editing = -> Session.equals("editing_classname", this._id)
+# Class Editing #
+
+Template.edit_class_modal.name = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.name
+Template.edit_class_modal.class_color = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.color
+
+Template.edit_class_modal.events
+    "click .delete": ->
+        Meteor.call "nukeClass", Session.get("editing_class"), ->
+            Session.set "editing_class", null
+            Router?.setList ""
+            Offline.save()
+    "click .cancel": ->
+        Session.set "editing_class", null
+    "click .save": ->
+        id = Session.get("editing_class")
+        name = $("#class-name-input").val()
+        color = $("#class-color-input").val()
+        Offline.smart.classes().update id, {$set: {name: name, color: color}}, -> Offline.save()
+    "click .random-color": ->
+        $("#class-color-input").val(Please.make_color())
+    "click form button": (evt) -> evt.preventDefault()
+
+$ ->
+    $("#color-help").popover
+        content: "Use <a href=\"http://www.crockford.com/wrrrld/color.html\">these words</a> or any other CSS color.
+        Press the <i class=\"fa fa-random\"></i> button to generate a random color."
+        html: on
+        trigger: "focus"
 
 # New Assignment Box #
 

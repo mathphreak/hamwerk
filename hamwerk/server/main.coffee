@@ -69,16 +69,16 @@ Meteor.methods
             ["Select \"Hamwerk 101\" in the sidebar and see all these assignments", "9 days from now"]
             ["Create an assignment without typing \"Hamwerk 101\" first", "9 days from now"]
             ["Select your other class in the sidebar and make a new assignment without typing the class name, then go back to \"All Classes\"", "10 days from now"]
-            ["Edit \"Hamwerk 101\" by pressing the pencil in the sidebar, changing the name, and pressing Enter", "11 days from now"]
+            ["Edit \"Hamwerk 101\" by pressing the pencil in the sidebar, changing the name and color, and pressing \"Save\"", "11 days from now"]
             ["Remember that you can create a new class called \"Hamwerk 101\" to see this all again", "12 days from now"]
-            ["Edit your new name for \"Hamwerk 101\" and press the trash can to remove this class", "12 days from now"]
+            ["Edit your new name for \"Hamwerk 101\" and press \"Delete\" to remove this class", "12 days from now"]
         ]
 
         oldOnboardingClassIDs = Classes.find({user: @userId, name: "Hamwerk 101"}).map((theClass) -> theClass._id)
         for oldClass in oldOnboardingClassIDs
             Assignments.remove({class_id: oldClass})
             Classes.remove(oldClass)
-        class_id = Classes.insert(name: "Hamwerk 101", user: @userId)
+        class_id = Classes.insert(name: "Hamwerk 101", user: @userId, color: Please.make_color())
         timestamp = (new Date()).getTime()
         for [assignment, fuzzyDueDate] in assignments
             dueDate = parseFuzzyDate(fuzzyDueDate)
