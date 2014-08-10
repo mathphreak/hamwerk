@@ -134,6 +134,8 @@ Template.edit_class_modal.events
         Offline.smart.classes().update id, {$set: {name: name, color: color}}, -> Offline.save()
     "click .random-color": ->
         $("#class-color-input").val(Please.make_color())
+    "click input[type='checkbox']": ->
+
     "click form button": (evt) -> evt.preventDefault()
 
 $ ->

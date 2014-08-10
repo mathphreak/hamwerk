@@ -30,3 +30,19 @@ a.check {
 .active .btn-link {
     color: white;
 }
+
+input[type="checkbox"] + .time-fields {
+    visibility: hidden;
+}
+
+input[type="checkbox"]:checked + .time-fields {
+    visibility: visible;
+}
+
+.time-fields form {
+    display: inline;
+}
+
+.time-fields input[type="text"] {
+    width: 3.5em;
+}
