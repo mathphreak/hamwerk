@@ -44,97 +44,80 @@
                             </div>
                         </div>
                         <h2>Schedule</h2>
-                        <div class="checkbox sunday">
-                            <label>
-                                <input type="checkbox"> Sunday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="checkbox monday">
-                            <label>
-                                <input type="checkbox"> Monday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="checkbox tuesday">
-                            <label>
-                                <input type="checkbox"> Tuesday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="checkbox wednesday">
-                            <label>
-                                <input type="checkbox"> Wednesday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="checkbox thursday">
-                            <label>
-                                <input type="checkbox"> Thursday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="checkbox friday">
-                            <label>
-                                <input type="checkbox"> Friday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="checkbox saturday">
-                            <label>
-                                <input type="checkbox"> Saturday
-                                <span class="time-fields">
-                                    at
-                                    <form class="form-inline" role="form">
-                                        <input type="text" class="form-control input-sm hour" placeholder="HH">
-                                        :
-                                        <input type="text" class="form-control input-sm minute" placeholder="MM">
-                                    </form>
-                                </span>
-                            </label>
-                        </div>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Enabled</th>
+                                    <th>Day of Week</th>
+                                    <th>Time Class Meets</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="sunday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Sunday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr class="monday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Monday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr class="tuesday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Tuesday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr class="wednesday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Wednesday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr class="thursday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Thursday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr class="friday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Friday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr class="saturday">
+                                    <td><input type="checkbox"></td>
+                                    <td>Saturday</td>
+                                    <td>
+                                        <form class="form-inline" role="form">
+                                            <input type="time" class="form-control input-sm" placeholder="HH:MM">
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </form>
                 </div>
                 <div class="modal-footer">
