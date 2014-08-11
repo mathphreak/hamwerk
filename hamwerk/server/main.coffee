@@ -3,8 +3,7 @@
 #            color: String
 #            schedule: Array
 #                enabled: Boolean
-#                hh: Number (24-hour time)
-#                mm: Number
+#                time: String "hh:mm" (24-hour time)
 @Classes = new Meteor.Collection "classes"
 
 Classes.allow

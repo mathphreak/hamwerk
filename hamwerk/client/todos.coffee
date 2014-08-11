@@ -82,6 +82,10 @@ Template.contents.showEverything = ->
 
 # Classes #
 
+disableTimeFields = ->
+    for dow in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
+        $(".#{dow} input[type='time']").prop("disabled", not $(".#{dow} input[type='checkbox']").prop("checked"))
+
 Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name: 1
 
 Template.classes.fake_all_class_list = -> [_id: ""]
@@ -96,6 +100,7 @@ Template.classes.events
     "click .class": (evt) -> evt.preventDefault()
     "click .edit": (evt) ->
         Session.set "editing_class", this._id
+        disableTimeFields()
 
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
@@ -118,6 +123,9 @@ Template.classes.active = ->
 
 Template.edit_class_modal.name = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.name
 Template.edit_class_modal.class_color = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.color
+for dow, n in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
+    Template.edit_class_modal["#{dow}Checked"] = -> if Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.enabled then "checked" else ""
+    Template.edit_class_modal["#{dow}Time"] = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.time
 
 Template.edit_class_modal.events
     "click .delete": ->
@@ -131,11 +139,11 @@ Template.edit_class_modal.events
         id = Session.get("editing_class")
         name = $("#class-name-input").val()
         color = $("#class-color-input").val()
-        Offline.smart.classes().update id, {$set: {name: name, color: color}}, -> Offline.save()
+        schedule = ({enabled: $(".#{dow} input[type='checkbox']").prop("checked"), time: $(".#{dow} input[type='time']").val()} for dow in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6]))
+        Offline.smart.classes().update id, {$set: {name: name, color: color, schedule: schedule}}, -> Offline.save()
     "click .random-color": ->
         $("#class-color-input").val(Please.make_color())
-    "click input[type='checkbox']": ->
-
+    "click input[type='checkbox']": disableTimeFields
     "click form button": (evt) -> evt.preventDefault()
 
 $ ->
