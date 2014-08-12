@@ -74,8 +74,9 @@ Meteor.methods
             ["Select your other class in the sidebar and make a new assignment without typing the class name, then go back to \"All Classes\"", "10 days from now"]
             ["See how the other class's assignment has a different color on the left", "10 days from now"]
             ["Edit \"Hamwerk 101\" by pressing the pencil in the sidebar, changing the name and color, and pressing \"Save\"", "11 days from now"]
-            ["Remember that you can create a new class called \"Hamwerk 101\" to see this all again", "12 days from now"]
-            ["Edit your new name for \"Hamwerk 101\" and press \"Delete\" to remove this class", "12 days from now"]
+            ["Edit your new class and set up a schedule; soon Hamwerk will use this information for awesomeness", "12 days from now"]
+            ["Remember that you can create a new class called \"Hamwerk 101\" to see this all again", "13 days from now"]
+            ["Edit your new name for \"Hamwerk 101\" and press \"Delete\" to remove this class", "13 days from now"]
         ]
 
         oldOnboardingClassIDs = Classes.find({user: @userId, name: "Hamwerk 101"}).map((theClass) -> theClass._id)

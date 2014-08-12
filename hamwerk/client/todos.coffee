@@ -100,7 +100,6 @@ Template.classes.events
     "click .class": (evt) -> evt.preventDefault()
     "click .edit": (evt) ->
         Session.set "editing_class", this._id
-        disableTimeFields()
 
 # Attach events to keydown, keyup, and blur on "New class" input box.
 Template.classes.events okCancelEvents "#new-class",
@@ -124,8 +123,13 @@ Template.classes.active = ->
 Template.edit_class_modal.name = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.name
 Template.edit_class_modal.class_color = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.color
 for dow, n in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
-    Template.edit_class_modal["#{dow}Checked"] = -> if Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.enabled then "checked" else ""
-    Template.edit_class_modal["#{dow}Time"] = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.time
+    do (dow, n) ->
+        Template.edit_class_modal["#{dow}Checked"] = ->
+            console.log "#{dow}Checked"
+            if Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.enabled then "checked" else ""
+        Template.edit_class_modal["#{dow}Time"] = ->
+            console.log "#{dow}Time"
+            Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.time
 
 Template.edit_class_modal.events
     "click .delete": ->
@@ -152,6 +156,7 @@ $ ->
         Press the <i class=\"fa fa-random\"></i> button to generate a random color."
         html: on
         trigger: "focus"
+    $("#edit-class").on "shown.bs.modal", disableTimeFields
 
 # New Assignment Box #
 
@@ -275,7 +280,7 @@ Template.assignment_item.done_checkbox = -> if this.done then "check-" else ""
 Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
 
 Template.assignment_item.class_color = ->
-    Offline.smart.classes().findOne(@class_id).color
+    Offline.smart.classes().findOne(@class_id)?.color
 
 Template.assignment_item.color_class = ->
     if @done
