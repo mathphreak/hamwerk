@@ -125,10 +125,8 @@ Template.edit_class_modal.class_color = -> Offline.smart.classes().findOne(Sessi
 for dow, n in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
     do (dow, n) ->
         Template.edit_class_modal["#{dow}Checked"] = ->
-            console.log "#{dow}Checked"
             if Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.enabled then "checked" else ""
         Template.edit_class_modal["#{dow}Time"] = ->
-            console.log "#{dow}Time"
             Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule[n]?.time
 
 Template.edit_class_modal.events
@@ -267,7 +265,7 @@ Template.assignments.assignments = ->
 
 Template.assignment_item.precise_due_date = -> DateOMatic.stringify(@due)
 
-Template.assignment_item.editable_due_date = -> DateOMatic.stringify(@due, no)
+Template.assignment_item.editable_due_date = -> DateOMatic.stringify(@due, no, yes)
 
 div = (a, b) -> (a - a % b) / b
 
@@ -301,8 +299,6 @@ Template.assignment_item.events
 
     "click .edit": (evt, tmpl) ->
         Session.set "editing_itemname", this._id
-        Deps.flush() # update DOM before focus
-        activateInput(tmpl.find("#assignment-input"))
 
     "click .destroy": ->
         Offline.smart.assignments().remove this._id, ->
@@ -321,16 +317,24 @@ Template.assignment_item.events
         Deps.flush()
         activateInput(tmpl.find("#due-date-input"))
 
+$ ->
+    if Math.max(document.documentElement.clientWidth, window.innerWidth || 0) < 768
+        Template.assignment_item.events
+            "change #due-date-input": ->
+                Offline.smart.assignments().update this._id, {$set: text: $("#assignment-input").val(), due: DateOMatic.destringify($("#due-date-input").val())}, ->
+                    Offline.save()
+                Session.set "editing_itemname", null
+
 Template.assignment_item.events okCancelEvents "#assignment-input",
     ok: (value) ->
-        Offline.smart.assignments().update this._id, {$set: text: value}, ->
+        Offline.smart.assignments().update this._id, {$set: text: value, due: DateOMatic.destringify($("#due-date-input").val())}, ->
             Offline.save()
         Session.set "editing_itemname", null
     cancel: -> Session.set "editing_itemname", null
 
 Template.assignment_item.events okCancelEvents "#due-date-input",
     ok: (value) ->
-        Offline.smart.assignments().update this._id, {$set: due: DateOMatic.destringify(value)}, ->
+        Offline.smart.assignments().update this._id, {$set: text: $("#assignment-input").val(), due: DateOMatic.destringify($("#due-date-input").val())}, ->
             Offline.save()
         Session.set "editing_itemname", null
     cancel: -> Session.set "editing_itemname", null

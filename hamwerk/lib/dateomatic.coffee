@@ -30,11 +30,20 @@ pluralify = (rawAmount, singular) ->
     else
         "#{amount} #{singular}s"
 
+pad = (number, digits) ->
+    result = "#{number}"
+    while result.length < digits
+        result = "0#{result}"
+    return result
+
 @DateOMatic =
-    stringify: (fakeDate, dow = yes) ->
+    stringify: (fakeDate, dow = yes, iso8601 = no) ->
         date = new Date(fakeDate)
         dowFragment = if dow then "#{dowNames[date.getDay()]}, " else ""
-        "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
+        if iso8601
+            "#{pad date.getFullYear(), 4}-#{pad date.getMonth()+1, 2}-#{pad date.getDate(), 2}"
+        else
+            "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
 
     getDowName: (dow) -> dowNames[dow]
 
@@ -69,14 +78,20 @@ pluralify = (rawAmount, singular) ->
         return pluralify(yearsDiff, 'year')
 
     destringify: (dateString) ->
-        chunks = dateString.split(" ").map((x) -> if /,$/.test(x) then x.slice(0, -1) else x)
-        if chunks.length is 4
-            [dow, month, day, year] = chunks
-        else if chunks.length is 3
-            [month, day, year] = chunks
-        result = new Date(parseInt(year), monthNames.indexOf(month), parseInt(day))
-        if dow? and dowNames[result.getDay()] isnt dow
-            throw new Error("Wrong day of week")
+        result = null
+        iso8601Match = /(\d\d\d\d)-(\d\d)-(\d\d)/.exec(dateString)
+        if iso8601Match?
+            [..., y, m, d] = iso8601Match
+            result = new Date(parseInt(y), parseInt(m) - 1, parseInt(d))
+        else
+            chunks = dateString.split(" ").map((x) -> if /,$/.test(x) then x.slice(0, -1) else x)
+            if chunks.length is 4
+                [dow, month, day, year] = chunks
+            else if chunks.length is 3
+                [month, day, year] = chunks
+            result = new Date(parseInt(year), monthNames.indexOf(month), parseInt(day))
+            if dow? and dowNames[result.getDay()] isnt dow
+                throw new Error("Wrong day of week")
         return result
 
     parseFuzzyFutureDate: (input) ->
@@ -85,7 +100,7 @@ pluralify = (rawAmount, singular) ->
         tomorrow = -> result.setDate(result.getDate() + 1)
         monthDayMatch = /^([A-Z][a-z]+) (\d+)(?:st|nd|rd|th)?$/.exec(dateString)
         absoluteDateMatches = /^(\w+,?\s)?\w+ \d+,? \d+$/.test(dateString)
-        inNDaysMatch = /^(\d+) days from now/i.exec(dateString)
+        inNDaysMatch = /^(\d+) days from now$/i.exec(dateString)
         trimmedDowNames = dowNames.map((name) -> name.slice(0, 3))
         trimmedMonthNames = monthNames.map((name) -> name.slice(0, 3))
         if dateString is "Today"
@@ -124,5 +139,13 @@ pluralify = (rawAmount, singular) ->
         result.setSeconds(0)
         result.setMilliseconds(0)
         return new Date(result)
+
+    parseFuzzyFutureDateAndTime: (input) ->
+        result = new Date
+        splitDateTimeMatch = /^(.*?) at (.*?)$/i.exec input
+        if not splitDateTimeMatch?
+            return null
+        [..., dateString, timeString] = splitDateTimeMatch
+        result = @parseFuzzyFutureDate(input)
 
 _.bindAll(DateOMatic, _.functions(DateOMatic)...)
