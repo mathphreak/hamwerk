@@ -146,6 +146,21 @@ pad = (number, digits) ->
         if not splitDateTimeMatch?
             return null
         [..., dateString, timeString] = splitDateTimeMatch
-        result = @parseFuzzyFutureDate(input)
+        result = @parseFuzzyFutureDate(dateString)
+        if result is null
+            return null
+        twelveHourTimeMatch = /^(\d?\d):(\d\d) (p|a)\.?m\.?$/i.exec timeString
+        twentyFourHourTimeMatch = /^(\d\d):?(\d\d)$/.exec timeString
+        if twelveHourTimeMatch?
+            [..., hh, mm, pa] = twelveHourTimeMatch
+            result.setHours (if pa.toLowerCase() is "p" then 12 else 0) + parseInt(hh)
+            result.setMinutes parseInt mm
+        else if twentyFourHourTimeMatch?
+            [..., hh, mm] = twentyFourHourTimeMatch
+            result.setHours parseInt hh
+            result.setMinutes parseInt mm
+        else
+            return null
+        return result
 
 _.bindAll(DateOMatic, _.functions(DateOMatic)...)

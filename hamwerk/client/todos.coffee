@@ -16,8 +16,8 @@ Session.setDefault "editing_class", null
 Session.setDefault "editing_itemname", null
 
 # Forcing assignments to re-render every so often
-Session.setDefault "assignment_interval", Date.now()
-Meteor.setInterval (-> Session.set "assignment_interval", Date.now()), 500
+Session.setDefault "update_interval", Date.now()
+Meteor.setInterval (-> Session.set "update_interval", Date.now()), 500
 
 # Subscribe to "classes" collection on startup.
 # Select a class once data has arrived.
@@ -86,7 +86,40 @@ disableTimeFields = ->
     for dow in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
         $(".#{dow} input[type='time']").prop("disabled", not $(".#{dow} input[type='checkbox']").prop("checked"))
 
-Template.classes.classes = -> return Offline.smart.classes().find {}, sort: name: 1
+Template.classes.classes = ->
+    # Fake dependency on update_interval to update periodically.
+    Meteor.extra_garbage_of_tomfoolery = Session.get "update_interval"
+
+    classes = Offline.smart.classes().find({}).fetch()
+    sortIterator = (oneClass) ->
+        return oneClass.name unless oneClass.schedule?
+        [sun, mon, tue, wed, thu, fri, sat] = oneClass.schedule
+        dateStrings = _.compact [
+            if sun.enabled
+                "Sunday at #{sun.time}"
+            if mon.enabled
+                "Monday at #{mon.time}"
+            if tue.enabled
+                "Tuesday at #{tue.time}"
+            if wed.enabled
+                "Wednesday at #{wed.time}"
+            if thu.enabled
+                "Thursday at #{thu.time}"
+            if fri.enabled
+                "Friday at #{fri.time}"
+            if sat.enabled
+                "Saturday at #{sat.time}"
+        ]
+        dates = _.map dateStrings, DateOMatic.parseFuzzyFutureDateAndTime
+        deltas = _.map dates, (date) ->
+            delta = DateOMatic.msDifferential date
+            if delta > 603900000
+                delta = delta - 603900000
+            delta
+        smallestDelta = Math.min deltas...
+        return smallestDelta
+    sortedClasses = _.sortBy classes, sortIterator
+    return sortedClasses
 
 Template.classes.fake_all_class_list = -> [_id: ""]
 
@@ -107,7 +140,21 @@ Template.classes.events okCancelEvents "#new-class",
         if text is "Hamwerk 101"
             Meteor.users.update(Meteor.userId(), {$set: {profile: {onboarded: false}}})
         else
-            id = Offline.smart.classes().insert {name: text, user: Meteor.userId(), color: Please.make_color()}, ->
+            newClass = {
+                name: text
+                user: Meteor.userId()
+                color: Please.make_color()
+                schedule: [
+                    {enabled: no, time: ""}
+                    {enabled: no, time: ""}
+                    {enabled: no, time: ""}
+                    {enabled: no, time: ""}
+                    {enabled: no, time: ""}
+                    {enabled: no, time: ""}
+                    {enabled: no, time: ""}
+                ]
+            }
+            id = Offline.smart.classes().insert newClass, ->
                 Meteor.subscribe("assignments")
                 Offline.save()
         evt.target.value = ""
@@ -238,8 +285,8 @@ Template.assignments.events okCancelEvents "#new-assignment",
                 return
 
 Template.assignments.assignments = ->
-    # Fake dependency on assignment_interval to update periodically.
-    Meteor.extra_garbage_of_tomfoolery = Session.get "assignment_interval"
+    # Fake dependency on update_interval to update periodically.
+    Meteor.extra_garbage_of_tomfoolery = Session.get "update_interval"
 
     # Determine which assignments to display in main pane,
     # selected based on class_id and tag_filter.

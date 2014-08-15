@@ -83,7 +83,21 @@ Meteor.methods
         for oldClass in oldOnboardingClassIDs
             Assignments.remove({class_id: oldClass})
             Classes.remove(oldClass)
-        class_id = Classes.insert(name: "Hamwerk 101", user: @userId, color: Please.make_color())
+        newClass = {
+            name: "Hamwerk 101"
+            user: @userId
+            color: Please.make_color()
+            schedule: [
+                {enabled: no, time: ""}
+                {enabled: no, time: ""}
+                {enabled: no, time: ""}
+                {enabled: no, time: ""}
+                {enabled: no, time: ""}
+                {enabled: no, time: ""}
+                {enabled: no, time: ""}
+            ]
+        }
+        class_id = Classes.insert(newClass)
         timestamp = (new Date()).getTime()
         for [assignment, fuzzyDueDate] in assignments
             dueDate = parseFuzzyDate(fuzzyDueDate)
