@@ -25,7 +25,7 @@
 <template name="assignment_item">
     <div class="assignment {{done_class}} list-group-item row {{color_class}}" style="border-left: 5px solid {{class_color}};">
         {{#if editing}}
-            <div class="col-sm-9">
+            <div class="col-sm-8">
                 <div class="input-group input-group-sm">
                     <span class="input-group-btn">
                         <button class="btn btn-warning cancel"><i class="fa fa-ban"></i></button>
@@ -33,10 +33,10 @@
                     <input class="form-control" id="assignment-input" type="text" value="{{text}}" />
                 </div>
             </div>
-            <div class="item-details col-sm-3 text-right">
+            <div class="item-details col-sm-4 text-right">
                 <div class="input-group input-group-sm">
                     <span class="input-group-addon">Due</span>
-                    <input id="due-date-input" type="date" value="{{editable_due_date}}" class="form-control" />
+                    <input id="due-date-input" type="datetime-local" value="{{editable_due_date}}" class="form-control" />
                     <span class="input-group-btn">
                         <button class="btn btn-danger destroy"><i class="fa fa-trash-o"></i></button>
                     </span>

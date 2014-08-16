@@ -257,6 +257,28 @@ Template.assignments.events okCancelEvents "#new-assignment",
             if parsedDate isnt null
                 newAssignment.text = dueDateMatch[1]
                 newAssignment.due = parsedDate
+        if Offline.smart.classes().findOne(class_id).schedule?
+            relevantClass = Offline.smart.classes().findOne(class_id)
+            [sun, mon, tue, wed, thu, fri, sat] = relevantClass.schedule
+            dateStrings = _.compact [
+                if sun.enabled
+                    "Sunday at #{sun.time}"
+                if mon.enabled
+                    "Monday at #{mon.time}"
+                if tue.enabled
+                    "Tuesday at #{tue.time}"
+                if wed.enabled
+                    "Wednesday at #{wed.time}"
+                if thu.enabled
+                    "Thursday at #{thu.time}"
+                if fri.enabled
+                    "Friday at #{fri.time}"
+                if sat.enabled
+                    "Saturday at #{sat.time}"
+            ]
+            dates = _.map dateStrings, (dateString) -> {string: dateString, date: DateOMatic.parseFuzzyFutureDateAndTime dateString}
+            deltas = _.sortBy dates, (date) -> DateOMatic.msDifferential date.date
+            newAssignment.due = deltas[0].date
         Offline.smart.assignments().insert newAssignment, ->
             Offline.save()
         evt.target.value = ""
@@ -310,9 +332,9 @@ Template.assignments.assignments = ->
            .reduce(((memo, list) -> memo.concat(list)), [])
            .value()
 
-Template.assignment_item.precise_due_date = -> DateOMatic.stringify(@due)
+Template.assignment_item.precise_due_date = -> DateOMatic.stringify(@due, yes, no, yes)
 
-Template.assignment_item.editable_due_date = -> DateOMatic.stringify(@due, no, yes)
+Template.assignment_item.editable_due_date = -> DateOMatic.stringify(@due, no, yes, yes)
 
 div = (a, b) -> (a - a % b) / b
 

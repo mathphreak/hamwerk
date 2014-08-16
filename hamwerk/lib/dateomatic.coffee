@@ -37,13 +37,19 @@ pad = (number, digits) ->
     return result
 
 @DateOMatic =
-    stringify: (fakeDate, dow = yes, iso8601 = no) ->
+    stringify: (fakeDate, dow = yes, iso8601 = no, time = no) ->
         date = new Date(fakeDate)
         dowFragment = if dow then "#{dowNames[date.getDay()]}, " else ""
+        timeFragment = if time
+            if iso8601
+                "T#{pad date.getHours(), 2}:#{pad date.getMinutes(), 2}"
+            else
+                " at #{pad date.getHours(), 2}:#{pad date.getMinutes(), 2}"
+        else ""
         if iso8601
-            "#{pad date.getFullYear(), 4}-#{pad date.getMonth()+1, 2}-#{pad date.getDate(), 2}"
+            "#{pad date.getFullYear(), 4}-#{pad date.getMonth()+1, 2}-#{pad date.getDate(), 2}#{timeFragment}"
         else
-            "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}"
+            "#{dowFragment}#{monthNames[date.getMonth()]} #{date.getDate()}, #{date.getFullYear()}#{timeFragment}"
 
     getDowName: (dow) -> dowNames[dow]
 
@@ -79,10 +85,10 @@ pad = (number, digits) ->
 
     destringify: (dateString) ->
         result = null
-        iso8601Match = /(\d\d\d\d)-(\d\d)-(\d\d)/.exec(dateString)
+        iso8601Match = /(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(dateString)
         if iso8601Match?
-            [..., y, m, d] = iso8601Match
-            result = new Date(parseInt(y), parseInt(m) - 1, parseInt(d))
+            [..., y, m, d, hh, mm] = iso8601Match
+            result = new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(hh), parseInt(mm))
         else
             chunks = dateString.split(" ").map((x) -> if /,$/.test(x) then x.slice(0, -1) else x)
             if chunks.length is 4
