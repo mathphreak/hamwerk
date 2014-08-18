@@ -249,15 +249,15 @@ Template.assignments.events okCancelEvents "#new-assignment",
             done: false
             timestamp: (new Date()).getTime()
         dueDateMatch = /(.+) due (.+)/i.exec text
-        parsedDate = DateOMatic.parseFuzzyFutureDate("tomorrow")
+        parsedDate = null
         newAssignment.text = text
-        newAssignment.due = parsedDate
+        newAssignment.due = DateOMatic.parseFuzzyFutureDate("tomorrow")
         if dueDateMatch?
             parsedDate = DateOMatic.parseFuzzyFutureDate(dueDateMatch[2].toLowerCase())
-            if parsedDate isnt null
-                newAssignment.text = dueDateMatch[1]
-                newAssignment.due = parsedDate
-        if Offline.smart.classes().findOne(class_id).schedule?
+        if parsedDate isnt null
+            newAssignment.text = dueDateMatch[1]
+            newAssignment.due = parsedDate
+        else if Offline.smart.classes().findOne(class_id).schedule?
             relevantClass = Offline.smart.classes().findOne(class_id)
             if _.any _.pluck relevantClass.schedule, "enabled"
                 [sun, mon, tue, wed, thu, fri, sat] = relevantClass.schedule
