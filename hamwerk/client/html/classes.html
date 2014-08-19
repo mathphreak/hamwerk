@@ -5,6 +5,7 @@
     {{#each classes}}
         <a class="class list-group-item {{active}}" href="/{{_id}}" style="border-left: 5px solid {{class_color}};">
             {{name}}
+            <small>({{abbr}})</small>
             {{#if show_edit}}
                 <span class="pull-right edit">
                     <button class="btn btn-link btn-xs" data-toggle="modal" data-target="#edit-class"><i class="fa fa-pencil"></i></button>
