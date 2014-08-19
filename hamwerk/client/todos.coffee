@@ -339,6 +339,7 @@ Template.assignments.assignments = ->
         sel = {}
 
     return _(Offline.smart.assignments().find(sel).fetch()).chain()
+           .sortBy((obj) -> new Date(obj.timestamp).getTime())
            .sortBy((obj) -> new Date(obj.due).getTime())
            .sortBy("done")
            .groupBy("done")
