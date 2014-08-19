@@ -142,6 +142,7 @@ Template.classes.events okCancelEvents "#new-class",
         else
             newClass = {
                 name: text
+                abbr: text
                 user: Meteor.userId()
                 color: Please.make_color()
                 schedule: [
@@ -168,6 +169,7 @@ Template.classes.active = ->
 # Class Editing #
 
 Template.edit_class_modal.name = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.name
+Template.edit_class_modal.abbr = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.abbr
 Template.edit_class_modal.class_color = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.color
 for dow, n in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
     do (dow, n) ->
@@ -187,9 +189,10 @@ Template.edit_class_modal.events
     "click .save": ->
         id = Session.get("editing_class")
         name = $("#class-name-input").val()
+        abbr = $("#class-abbr-input").val()
         color = $("#class-color-input").val()
         schedule = ({enabled: $(".#{dow} input[type='checkbox']").prop("checked"), time: $(".#{dow} input[type='time']").val()} for dow in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6]))
-        Offline.smart.classes().update id, {$set: {name: name, color: color, schedule: schedule}}, -> Offline.save()
+        Offline.smart.classes().update id, {$set: {name: name, abbr: abbr, color: color, schedule: schedule}}, -> Offline.save()
     "click .random-color": ->
         $("#class-color-input").val(Please.make_color())
     "click input[type='checkbox']": disableTimeFields
@@ -219,7 +222,7 @@ Template.new_assignment_box.sample = ->
     ]
     task = "read chapter #{rand(1, 15)} due #{_.sample(types)()}"
     if Session.equals("class_id", "")
-        "#{_(Offline.smart.classes().find().fetch()).chain().pluck('name').shuffle().value()[0]} #{task}"
+        "#{_(Offline.smart.classes().find().fetch()).chain().pluck(_.shuffle(['name','abbr'])[0]).shuffle().value()[0]} #{task}"
     else
         "#{task}"
 
@@ -231,15 +234,23 @@ Template.assignments.events okCancelEvents "#new-assignment",
         class_id = Session.get("class_id")
         if !class_id
             lowercaseText = text.toLowerCase()
-            classes = Offline.smart.classes().find({}, fields: name: 1).fetch()
-            guessedClass = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
-            if guessedClass?
-                text = text.slice(guessedClass.name.length + 1)
+            classes = Offline.smart.classes().find({}, fields: {name: 1, abbr: 1}).fetch()
+            guessedClassByName = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
+            guessedClassByAbbr = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.abbr?.toLowerCase()) is 0
+            if guessedClassByName?
+                text = text.slice(guessedClassByName.name.length + 1)
                 if text.trim() is ""
                     alert "No assignment specified"
                     $("#new-assignment").parent().addClass("has-error")
                     return
-                class_id = guessedClass._id
+                class_id = guessedClassByName._id
+            else if guessedClassByAbbr?
+                text = text.slice(guessedClassByAbbr.abbr.length + 1)
+                if text.trim() is ""
+                    alert "No assignment specified"
+                    $("#new-assignment").parent().addClass("has-error")
+                    return
+                class_id = guessedClassByAbbr._id
             else
                 alert "No class specified"
                 $("#new-assignment").parent().addClass("has-error")
@@ -289,13 +300,21 @@ Template.assignments.events okCancelEvents "#new-assignment",
         class_id = Session.get("class_id")
         if !class_id
             lowercaseText = text.toLowerCase()
-            classes = Offline.smart.classes().find({}, fields: name: 1).fetch()
-            guessedClass = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
-            if guessedClass?
-                text = text.slice(guessedClass.name.length + 1)
+            classes = Offline.smart.classes().find({}, fields: {name: 1, abbr: 1}).fetch()
+            guessedClassByName = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.name.toLowerCase()) is 0
+            guessedClassByAbbr = _.find classes, (thisClass) -> lowercaseText.indexOf(thisClass.abbr?.toLowerCase()) is 0
+            if guessedClassByName?
+                text = text.slice(guessedClassByName.name.length + 1)
                 if text.trim() is ""
                     $("#new-assignment").parent().addClass("has-error")
                     return
+                class_id = guessedClassByName._id
+            else if guessedClassByAbbr?
+                text = text.slice(guessedClassByAbbr.abbr.length + 1)
+                if text.trim() is ""
+                    $("#new-assignment").parent().addClass("has-error")
+                    return
+                class_id = guessedClassByAbbr._id
             else
                 $("#new-assignment").parent().addClass("has-error")
                 return
