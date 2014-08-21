@@ -1,8 +1,7 @@
 hamwerk
 =======
 
-A better homework system. Well, maybe.
-
+A better homework system.
 
 Development
 -----------
