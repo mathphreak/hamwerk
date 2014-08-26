@@ -75,7 +75,7 @@ pad = (number, digits) ->
         if daysDiff <= 7
             return pluralify(daysDiff, 'day')
         weeksDiff = daysDiff / 7
-        if weeksDiff <= 4
+        if daysDiff <= 30
             return pluralify(weeksDiff, 'week')
         monthsDiff = daysDiff / 30
         if daysDiff <= 365
