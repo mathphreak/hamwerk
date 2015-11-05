@@ -75,10 +75,11 @@ activateInput = (input) ->
     input.focus()
     input.select()
 
-Template.contents.showEverything = ->
-    return true if Meteor.userId()?
-    return true if !online
-    return false
+Template.contents.helpers
+    showEverything: ->
+        return true if Meteor.userId()?
+        return true if !online
+        return false
 
 # Classes #
 
@@ -86,47 +87,50 @@ disableTimeFields = ->
     for dow in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
         $(".#{dow} input[type='time']").prop("disabled", not $(".#{dow} input[type='checkbox']").prop("checked"))
 
-Template.classes.classes = ->
-    # Fake dependency on update_interval to update periodically.
-    Meteor.extra_garbage_of_tomfoolery = Session.get "update_interval"
+Template.classes.helpers
+    classes: ->
+        # Fake dependency on update_interval to update periodically.
+        Meteor.extra_garbage_of_tomfoolery = Session.get "update_interval"
 
-    classes = Offline.smart.classes().find({}).fetch()
-    sortIterator = (oneClass) ->
-        return oneClass.name unless oneClass.schedule?
-        [sun, mon, tue, wed, thu, fri, sat] = oneClass.schedule
-        dateStrings = _.compact [
-            if sun.enabled
-                "Sunday at #{sun.time}"
-            if mon.enabled
-                "Monday at #{mon.time}"
-            if tue.enabled
-                "Tuesday at #{tue.time}"
-            if wed.enabled
-                "Wednesday at #{wed.time}"
-            if thu.enabled
-                "Thursday at #{thu.time}"
-            if fri.enabled
-                "Friday at #{fri.time}"
-            if sat.enabled
-                "Saturday at #{sat.time}"
-        ]
-        dates = _.map dateStrings, DateOMatic.parseFuzzyFutureDateAndTime
-        deltas = _.map dates, (date) ->
-            delta = DateOMatic.msDifferential date
-            if delta > 603900000
-                delta = delta - 603900000
-            delta
-        smallestDelta = Math.min deltas...
-        return smallestDelta
-    sortedClasses = _.sortBy classes, sortIterator
-    return sortedClasses
+        classes = Offline.smart.classes().find({}).fetch()
+        sortIterator = (oneClass) ->
+            return oneClass.name unless oneClass.schedule?
+            [sun, mon, tue, wed, thu, fri, sat] = oneClass.schedule
+            dateStrings = _.compact [
+                if sun.enabled
+                    "Sunday at #{sun.time}"
+                if mon.enabled
+                    "Monday at #{mon.time}"
+                if tue.enabled
+                    "Tuesday at #{tue.time}"
+                if wed.enabled
+                    "Wednesday at #{wed.time}"
+                if thu.enabled
+                    "Thursday at #{thu.time}"
+                if fri.enabled
+                    "Friday at #{fri.time}"
+                if sat.enabled
+                    "Saturday at #{sat.time}"
+            ]
+            dates = _.map dateStrings, DateOMatic.parseFuzzyFutureDateAndTime
+            deltas = _.map dates, (date) ->
+                delta = DateOMatic.msDifferential date
+                if delta > 603900000
+                    delta = delta - 603900000
+                delta
+            smallestDelta = Math.min deltas...
+            return smallestDelta
+        sortedClasses = _.sortBy classes, sortIterator
+        return sortedClasses
 
-Template.classes.fake_all_class_list = -> [_id: ""]
+    fake_all_class_list: -> [_id: ""]
 
-Template.classes.edit_disabled = -> if online() then "" else "disabled"
-Template.classes.show_edit = -> online()
-Template.new_assignment_box.disabled = -> if online() then "" else "disabled"
-Template.classes.class_color = -> @color
+    edit_disabled: -> if online() then "" else "disabled"
+    show_edit: -> online()
+    class_color: -> @color
+
+Template.new_assignment_box.helpers
+    disabled: -> if online() then "" else "disabled"
 
 Template.classes.events
     "mousedown .class": (evt) -> Router.setList(this._id) if @_id?
@@ -160,23 +164,28 @@ Template.classes.events okCancelEvents "#new-class",
                 Offline.save()
         evt.target.value = ""
 
-Template.classes.active = ->
-    if Session.equals("class_id", this._id)
-        "active"
-    else
-        ""
+Template.classes.helpers
+    active: ->
+        if Session.equals("class_id", this._id)
+            "active"
+        else
+            ""
 
 # Class Editing #
 
-Template.edit_class_modal.name = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.name
-Template.edit_class_modal.abbr = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.abbr
-Template.edit_class_modal.class_color = -> Offline.smart.classes().findOne(Session.get("editing_class"))?.color
-for dow, n in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
-    do (dow, n) ->
-        Template.edit_class_modal["#{dow}Checked"] = ->
-            if Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule?[n]?.enabled then "checked" else ""
-        Template.edit_class_modal["#{dow}Time"] = ->
-            Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule?[n]?.time
+Template.edit_class_modal.helpers
+    name: -> Offline.smart.classes().findOne(Session.get("editing_class"))?.name
+    abbr: -> Offline.smart.classes().findOne(Session.get("editing_class"))?.abbr
+    class_color: -> Offline.smart.classes().findOne(Session.get("editing_class"))?.color
+do ->
+    ecmHelpers = {}
+    for dow, n in (DateOMatic.getDowName(n).toLowerCase() for n in [0..6])
+        do (dow, n) ->
+            ecmHelpers["#{dow}Checked"] = ->
+                if Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule?[n]?.enabled then "checked" else ""
+            ecmHelpers["#{dow}Time"] = ->
+                Offline.smart.classes().findOne(Session.get("editing_class"))?.schedule?[n]?.time
+    Template.edit_class_modal.helpers ecmHelpers
 
 Template.edit_class_modal.events
     "click .delete": ->
@@ -208,23 +217,24 @@ $ ->
 
 # New Assignment Box #
 
-Template.new_assignment_box.sample = ->
-    rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
+Template.new_assignment_box.helpers
+    sample: ->
+        rand = (min, max) -> Math.floor(Math.random() * (max - min + 1) + min)
 
-    types = [
-        -> "today"
-        -> "tomorrow"
-        -> "#{DateOMatic.getMonthName(rand(0, 11))} #{rand(1, 28)}"
-        -> "#{DateOMatic.getMonthName(rand(0, 11))} #{rand(1, 28)}, #{new Date().getFullYear()+1}"
-        -> "#{DateOMatic.getDowName(rand(0, 6))}"
-        -> "#{DateOMatic.getDowName(rand(0, 6)).slice(0, 3)}"
-        -> "#{rand(1, 10)} days from now"
-    ]
-    task = "read chapter #{rand(1, 15)} due #{_.sample(types)()}"
-    if Session.equals("class_id", "")
-        "#{_(Offline.smart.classes().find().fetch()).chain().pluck(_.shuffle(['name','abbr'])[0]).shuffle().value()[0]} #{task}"
-    else
-        "#{task}"
+        types = [
+            -> "today"
+            -> "tomorrow"
+            -> "#{DateOMatic.getMonthName(rand(0, 11))} #{rand(1, 28)}"
+            -> "#{DateOMatic.getMonthName(rand(0, 11))} #{rand(1, 28)}, #{new Date().getFullYear()+1}"
+            -> "#{DateOMatic.getDowName(rand(0, 6))}"
+            -> "#{DateOMatic.getDowName(rand(0, 6)).slice(0, 3)}"
+            -> "#{rand(1, 10)} days from now"
+        ]
+        task = "read chapter #{rand(1, 15)} due #{_.sample(types)()}"
+        if Session.equals("class_id", "")
+            "#{_(Offline.smart.classes().find().fetch()).chain().pluck(_.shuffle(['name','abbr'])[0]).shuffle().value()[0]} #{task}"
+        else
+            "#{task}"
 
 # Assignments #
 
@@ -326,61 +336,71 @@ Template.assignments.events okCancelEvents "#new-assignment",
                 $("#new-assignment").parent().addClass("has-error")
                 return
 
-Template.assignments.assignments = ->
-    # Fake dependency on update_interval to update periodically.
-    Meteor.extra_garbage_of_tomfoolery = Session.get "update_interval"
-
-    # Determine which assignments to display in main pane,
-    # selected based on class_id and tag_filter.
-    class_id = Session.get "class_id"
-
-    sel = class_id: class_id
-    if class_id is ""
-        sel = {}
-
-    return _(Offline.smart.assignments().find(sel).fetch()).chain()
-           .sortBy((obj) -> new Date(obj.timestamp).getTime())
-           .sortBy((obj) -> new Date(obj.due).getTime())
-           .sortBy("done")
-           .groupBy("done")
-           .pairs()
-           .map(([truthiness, list]) -> _.sortBy(list, (obj) ->
-                if truthiness is "true"
-                    Math.abs(DateOMatic.msDifferential(new Date(obj.due)))
-                else
-                    new Date(obj.due).getTime()
-            ))
-           .reduce(((memo, list) -> memo.concat(list)), [])
-           .value()
-
-Template.assignment_item.precise_due_date = -> DateOMatic.stringify(@due, yes, no, yes)
-
-Template.assignment_item.editable_due_date = -> DateOMatic.stringify(@due, no, yes, yes)
-
 div = (a, b) -> (a - a % b) / b
 
-Template.assignment_item.fuzzy_due_date = -> if DateOMatic.isFuture(@due) then "in #{DateOMatic.fuzzyDifferential(@due)}" else "#{DateOMatic.fuzzyDifferential(@due)} ago"
+assignmentHelpers =
+    assignments: ->
+        # Fake dependency on update_interval to update periodically.
+        Meteor.extra_garbage_of_tomfoolery = Session.get "update_interval"
 
-Template.assignment_item.done_class = -> if this.done then "muted" else ""
+        # Determine which assignments to display in main pane,
+        # selected based on class_id and tag_filter.
+        class_id = Session.get "class_id"
 
-Template.assignment_item.done_checkbox = -> if this.done then "check-" else ""
+        sel = class_id: class_id
+        if class_id is ""
+            sel = {}
 
-Template.assignment_item.editing = -> Session.equals("editing_itemname", this._id)
+        return _(Offline.smart.assignments().find(sel).fetch()).chain()
+               .sortBy((obj) -> new Date(obj.timestamp).getTime())
+               .sortBy((obj) -> new Date(obj.due).getTime())
+               .sortBy("done")
+               .groupBy("done")
+               .pairs()
+               .map(([truthiness, list]) -> _.sortBy(list, (obj) ->
+                    if truthiness is "true"
+                        Math.abs(DateOMatic.msDifferential(new Date(obj.due)))
+                    else
+                        new Date(obj.due).getTime()
+                ))
+               .reduce(((memo, list) -> memo.concat(list)), [])
+               .value()
 
-Template.assignment_item.class_color = ->
-    Offline.smart.classes().findOne(@class_id)?.color
+    precise_due_date: ->
+        DateOMatic.stringify(@due, yes, no, yes)
 
-Template.assignment_item.color_class = ->
-    if @done
-        return "list-group-item-success"
-    msLeft = new Date(@due).getTime() - (new Date()).getTime()
-    if msLeft < 0
-        return "list-group-item-danger"
-    if div(msLeft, 1000 * 60 * 60) < 24
-        return "list-group-item-warning"
-    if div(msLeft, 1000 * 60 * 60 * 24) < 2
-        return "list-group-item-info"
-    return ""
+    editable_due_date: ->
+        DateOMatic.stringify(@due, no, yes, yes)
+
+    fuzzy_due_date: ->
+        if DateOMatic.isFuture(@due) then "in #{DateOMatic.fuzzyDifferential(@due)}" else "#{DateOMatic.fuzzyDifferential(@due)} ago"
+
+    done_class: ->
+        if this.done then "muted" else ""
+
+    done_checkbox: ->
+        if this.done then "check-" else ""
+
+    editing: ->
+        Session.equals("editing_itemname", this._id)
+
+    class_color: ->
+        Offline.smart.classes().findOne(@class_id)?.color
+
+    color_class: ->
+        if @done
+            return "list-group-item-success"
+        msLeft = new Date(@due).getTime() - (new Date()).getTime()
+        if msLeft < 0
+            return "list-group-item-danger"
+        if div(msLeft, 1000 * 60 * 60) < 24
+            return "list-group-item-warning"
+        if div(msLeft, 1000 * 60 * 60 * 24) < 2
+            return "list-group-item-info"
+        return ""
+
+Template.assignments.helpers assignmentHelpers
+Template.assignment_item.helpers assignmentHelpers
 
 Template.assignment_item.events
     "click .check": ->
